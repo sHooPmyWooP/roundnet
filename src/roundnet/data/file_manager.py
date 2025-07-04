@@ -160,11 +160,13 @@ class FileDataManager:
 
         # Update partnerships for team A
         if len(game.team_a_player_ids) >= 2:
-            partnership = self.get_partnership(game.team_a_player_ids[0], game.team_a_player_ids[1])
+            # Sort player IDs to ensure consistent ordering
+            p1, p2 = sorted(game.team_a_player_ids[:2])
+            partnership = self.get_partnership(p1, p2)
             if not partnership:
                 partnership = Partnership(
-                    player_a_id=game.team_a_player_ids[0],
-                    player_b_id=game.team_a_player_ids[1]
+                    player_a_id=p1,
+                    player_b_id=p2
                 )
                 partnerships.append(partnership)
 
@@ -174,11 +176,13 @@ class FileDataManager:
 
         # Update partnerships for team B
         if len(game.team_b_player_ids) >= 2:
-            partnership = self.get_partnership(game.team_b_player_ids[0], game.team_b_player_ids[1])
+            # Sort player IDs to ensure consistent ordering
+            p1, p2 = sorted(game.team_b_player_ids[:2])
+            partnership = self.get_partnership(p1, p2)
             if not partnership:
                 partnership = Partnership(
-                    player_a_id=game.team_b_player_ids[0],
-                    player_b_id=game.team_b_player_ids[1]
+                    player_a_id=p1,
+                    player_b_id=p2
                 )
                 partnerships.append(partnership)
 
