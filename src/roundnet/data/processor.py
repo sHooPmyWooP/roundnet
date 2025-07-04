@@ -1,164 +1,57 @@
-"""Data processing utilities."""
+"""Data processing utilities for the interactive roundnet app."""
 
 import pandas as pd
 import numpy as np
 from typing import Dict, Any, List, Tuple, Optional
 from datetime import datetime, timedelta
 
-from roundnet.data.loader import load_sample_data, load_player_data
+# Note: This file has been updated to work with the new interactive data management system.
+# Functions now use data from manager.py instead of sample data generators.
 
 
-def calculate_win_rate(games_df: pd.DataFrame, team_name: str) -> float:
+def calculate_win_rate(team_id: str) -> float:
     """Calculate win rate for a specific team."""
-    team_games = games_df[
-        (games_df["team_a"] == team_name) | (games_df["team_b"] == team_name)
-    ]
+    from roundnet.data.manager import get_games
+
+    games = get_games()
+    team_games = [g for g in games if g['team_a_id'] == team_id or g['team_b_id'] == team_id]
 
     if len(team_games) == 0:
         return 0.0
 
     wins = 0
-    for _, game in team_games.iterrows():
-        if game["team_a"] == team_name and game["score_a"] > game["score_b"]:
+    for game in team_games:
+        if game['team_a_id'] == team_id and game['score_a'] > game['score_b']:
             wins += 1
-        elif game["team_b"] == team_name and game["score_b"] > game["score_a"]:
+        elif game['team_b_id'] == team_id and game['score_b'] > game['score_a']:
             wins += 1
 
     return wins / len(team_games)
 
 
-def get_team_statistics(games_df: pd.DataFrame) -> pd.DataFrame:
-    """Calculate comprehensive statistics for all teams."""
-    teams = set(games_df["team_a"].unique()) | set(games_df["team_b"].unique())
-
-    stats = []
-    for team in teams:
-        team_games = games_df[
-            (games_df["team_a"] == team) | (games_df["team_b"] == team)
-        ]
-
-        wins = 0
-        losses = 0
-        points_for = 0
-        points_against = 0
-
-        for _, game in team_games.iterrows():
-            if game["team_a"] == team:
-                points_for += game["score_a"]
-                points_against += game["score_b"]
-                if game["score_a"] > game["score_b"]:
-                    wins += 1
-                else:
-                    losses += 1
-            else:
-                points_for += game["score_b"]
-                points_against += game["score_a"]
-                if game["score_b"] > game["score_a"]:
-                    wins += 1
-                else:
-                    losses += 1
-
-        total_games = wins + losses
-        win_rate = wins / total_games if total_games > 0 else 0
-        avg_points_for = points_for / total_games if total_games > 0 else 0
-        avg_points_against = points_against / total_games if total_games > 0 else 0
-
-        stats.append({
-            "team": team,
-            "games_played": total_games,
-            "wins": wins,
-            "losses": losses,
-            "win_rate": win_rate,
-            "points_for": points_for,
-            "points_against": points_against,
-            "avg_points_for": avg_points_for,
-            "avg_points_against": avg_points_against,
-            "point_differential": points_for - points_against,
-        })
-
-    return pd.DataFrame(stats).sort_values("win_rate", ascending=False)
-
-
-def filter_games_by_date(games_df: pd.DataFrame, start_date: datetime, end_date: datetime) -> pd.DataFrame:
-    """Filter games by date range."""
-    games_df["date"] = pd.to_datetime(games_df["date"])
-    return games_df[
-        (games_df["date"] >= start_date) & (games_df["date"] <= end_date)
-    ]
-
-
-def get_recent_games(games_df: pd.DataFrame, days: int = 7) -> pd.DataFrame:
-    """Get games from the last N days."""
-    end_date = datetime.now()
-    start_date = end_date - timedelta(days=days)
-    return filter_games_by_date(games_df, start_date, end_date)
-
-
-def calculate_player_stats(games_df: pd.DataFrame, player_df: pd.DataFrame) -> pd.DataFrame:
-    """Calculate detailed player statistics."""
-    # This is a simplified version - in a real app, you'd have more detailed game records
-    stats = []
-
-    for _, player in player_df.iterrows():
-        team = player["team"]
-
-        # Get games for this player's team
-        team_games = games_df[
-            (games_df["team_a"] == team) | (games_df["team_b"] == team)
-        ]
-
-        wins = 0
-        total_games = len(team_games)
-
-        for _, game in team_games.iterrows():
-            if game["team_a"] == team and game["score_a"] > game["score_b"]:
-                wins += 1
-            elif game["team_b"] == team and game["score_b"] > game["score_a"]:
-                wins += 1
-
-        win_rate = wins / total_games if total_games > 0 else 0
-
-        # Calculate performance metrics (sample calculations)
-        attack_rating = min(95, 60 + (win_rate * 30) + np.random.normal(0, 5))
-        defense_rating = min(95, 55 + (win_rate * 25) + np.random.normal(0, 5))
-        consistency = min(95, 65 + (win_rate * 20) + np.random.normal(0, 3))
-        teamwork = min(95, 70 + (win_rate * 15) + np.random.normal(0, 4))
-
-        stats.append({
-            "player_name": player["name"],
-            "team": team,
-            "games_played": total_games,
-            "wins": wins,
-            "losses": total_games - wins,
-            "win_rate": win_rate,
-            "attack_rating": max(0, attack_rating),
-            "defense_rating": max(0, defense_rating),
-            "consistency": max(0, consistency),
-            "teamwork": max(0, teamwork),
-        })
-
-    return pd.DataFrame(stats)
-
-
-def get_performance_trends(games_df: pd.DataFrame, team_name: str, window_size: int = 5) -> pd.DataFrame:
+def get_team_performance_trends(team_id: str, window_size: int = 5) -> pd.DataFrame:
     """Calculate rolling performance trends for a team."""
-    team_games = games_df[
-        (games_df["team_a"] == team_name) | (games_df["team_b"] == team_name)
-    ].sort_values("date")
+    from roundnet.data.manager import get_games
+
+    games = get_games()
+    team_games = [g for g in games if g['team_a_id'] == team_id or g['team_b_id'] == team_id]
+
+    # Sort by date
+    team_games.sort(key=lambda x: x['date'])
 
     results = []
-    for _, game in team_games.iterrows():
-        if game["team_a"] == team_name:
-            won = game["score_a"] > game["score_b"]
-            points_for = game["score_a"]
-            points_against = game["score_b"]
+    for game in team_games:
+        if game['team_a_id'] == team_id:
+            won = game['score_a'] > game['score_b']
+            points_for = game['score_a']
+            points_against = game['score_b']
         else:
-            won = game["score_b"] > game["score_a"]
-            points_for = game["score_b"]
-            points_against = game["score_a"]
+            won = game['score_b'] > game['score_a']
+            points_for = game['score_b']
+            points_against = game['score_a']
 
         results.append({
-            "date": game["date"],
+            "date": game['date'],
             "won": 1 if won else 0,
             "points_for": points_for,
             "points_against": points_against,
@@ -172,23 +65,141 @@ def get_performance_trends(games_df: pd.DataFrame, team_name: str, window_size: 
     return df
 
 
+def filter_games_by_date_range(start_date: datetime, end_date: datetime) -> List[Dict[str, Any]]:
+    """Filter games by date range."""
+    from roundnet.data.manager import get_games
+
+    games = get_games()
+    filtered_games = []
+
+    for game in games:
+        game_date = game['date']
+        if isinstance(game_date, str):
+            game_date = datetime.strptime(game_date, '%Y-%m-%d').date()
+
+        if start_date.date() <= game_date <= end_date.date():
+            filtered_games.append(game)
+
+    return filtered_games
+
+
+def get_head_to_head_record(team_a_id: str, team_b_id: str) -> Dict[str, Any]:
+    """Get head-to-head record between two teams."""
+    from roundnet.data.manager import get_games
+
+    games = get_games()
+    h2h_games = [
+        g for g in games
+        if (g['team_a_id'] == team_a_id and g['team_b_id'] == team_b_id) or
+           (g['team_a_id'] == team_b_id and g['team_b_id'] == team_a_id)
+    ]
+
+    team_a_wins = 0
+    team_b_wins = 0
+    draws = 0
+    total_games = len(h2h_games)
+
+    for game in h2h_games:
+        if game['team_a_id'] == team_a_id:
+            if game['score_a'] > game['score_b']:
+                team_a_wins += 1
+            elif game['score_a'] < game['score_b']:
+                team_b_wins += 1
+            else:
+                draws += 1
+        else:  # team_a_id is team_b in this game
+            if game['score_b'] > game['score_a']:
+                team_a_wins += 1
+            elif game['score_b'] < game['score_a']:
+                team_b_wins += 1
+            else:
+                draws += 1
+
+    return {
+        'total_games': total_games,
+        'team_a_wins': team_a_wins,
+        'team_b_wins': team_b_wins,
+        'draws': draws,
+        'team_a_win_rate': team_a_wins / total_games if total_games > 0 else 0,
+        'team_b_win_rate': team_b_wins / total_games if total_games > 0 else 0
+    }
+
+
+def get_player_team_contribution(player_id: str) -> Dict[str, Any]:
+    """Calculate a player's contribution to their team's performance."""
+    from roundnet.data.manager import get_player_by_id, get_team_stats
+
+    player = get_player_by_id(player_id)
+    if not player or not player.get('team_id'):
+        return {}
+
+    team_stats_df = get_team_stats()
+    if team_stats_df.empty:
+        return {}
+
+    # Find team stats
+    from roundnet.data.manager import get_team_by_id
+    team = get_team_by_id(player['team_id'])
+    if not team:
+        return {}
+
+    team_stat = team_stats_df[team_stats_df['team_name'] == team['name']]
+    if team_stat.empty:
+        return {}
+
+    stat = team_stat.iloc[0]
+
+    return {
+        'player_name': player['name'],
+        'team_name': team['name'],
+        'team_games': stat['games_played'],
+        'team_wins': stat['wins'],
+        'team_losses': stat['losses'],
+        'team_win_rate': stat['win_rate'],
+        'estimated_contribution': stat['win_rate'] * 100  # Simplified contribution score
+    }
+
+
 def generate_summary_stats() -> Dict[str, Any]:
     """Generate summary statistics for the dashboard."""
-    games_df = load_sample_data()
-    player_df = load_player_data()
+    from roundnet.data.manager import get_games, get_players, get_teams, get_recent_games
 
-    total_games = len(games_df)
-    total_players = len(player_df)
-    avg_game_duration = games_df["duration_minutes"].mean()
+    games = get_games()
+    players = get_players()
+    teams = get_teams()
+
+    total_games = len(games)
+    total_players = len(players)
+    total_teams = len(teams)
+
+    # Calculate average game duration
+    avg_game_duration = 0
+    if games:
+        total_duration = sum(game.get('duration_minutes', 30) for game in games)
+        avg_game_duration = total_duration / len(games)
 
     # Get recent activity
-    recent_games = get_recent_games(games_df, days=7)
+    recent_games = get_recent_games(7)
     recent_game_count = len(recent_games)
+
+    # Calculate most active team
+    most_active_team = None
+    if teams and games:
+        team_game_counts = {}
+        for team in teams:
+            team_id = team['id']
+            count = len([g for g in games if g['team_a_id'] == team_id or g['team_b_id'] == team_id])
+            team_game_counts[team['name']] = count
+
+        if team_game_counts:
+            most_active_team = max(team_game_counts, key=team_game_counts.get)
 
     return {
         "total_games": total_games,
         "total_players": total_players,
-        "avg_game_duration": avg_game_duration,
+        "total_teams": total_teams,
+        "avg_game_duration": round(avg_game_duration, 1),
         "recent_games": recent_game_count,
+        "most_active_team": most_active_team,
         "last_updated": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
     }

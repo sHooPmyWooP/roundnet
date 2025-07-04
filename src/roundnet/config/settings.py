@@ -6,8 +6,17 @@ from typing import Optional
 # App configuration
 APP_TITLE = "Roundnet Analytics Dashboard"
 APP_DESCRIPTION = """
-Welcome to the Roundnet Analytics Dashboard!
-Track games, analyze performance, and manage tournaments.
+🏐 **Welcome to the Interactive Roundnet Analytics Dashboard!**
+
+Manage your roundnet teams, track player performance, and record game results with our easy-to-use web interface.
+No file uploads needed - create and manage everything directly through the app!
+
+**Features:**
+- 🏐 Create and manage teams
+- 👤 Add and organize players
+- 🎯 Record game results
+- 📊 View detailed statistics and analytics
+- 📈 Track performance trends over time
 """
 
 # Data configuration

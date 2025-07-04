@@ -1,92 +1,75 @@
-"""Data loading utilities."""
+"""Data utilities for the interactive roundnet app."""
 
 import pandas as pd
 import streamlit as st
-from typing import Optional, Dict, Any, List
-from pathlib import Path
-import requests
+from typing import Dict, Any, List
 from datetime import datetime
 
-from roundnet.config.settings import DEFAULT_DATA_PATH, API_BASE_URL, API_TIMEOUT
+# Note: This file previously contained file upload and API functionality.
+# The app now uses interactive forms and in-memory storage via manager.py
 
 
-@st.cache_data(ttl=3600)  # Cache for 1 hour
-def load_csv_data(file_path: str) -> pd.DataFrame:
-    """Load data from a CSV file with caching."""
-    try:
-        df = pd.read_csv(file_path)
-        return df
-    except FileNotFoundError:
-        st.error(f"File not found: {file_path}")
-        return pd.DataFrame()
-    except Exception as e:
-        st.error(f"Error loading data: {str(e)}")
-        return pd.DataFrame()
+def create_sample_teams_and_games():
+    """Create some sample data for demonstration purposes."""
+    from roundnet.data.manager import add_team, add_player, add_game
+    from datetime import date, timedelta
 
+    if st.session_state.get('sample_data_created'):
+        return
 
-@st.cache_data(ttl=1800)  # Cache for 30 minutes
-def fetch_api_data(endpoint: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-    """Fetch data from an API endpoint with caching."""
-    try:
-        url = f"{API_BASE_URL}/{endpoint.lstrip('/')}"
-        response = requests.get(url, params=params, timeout=API_TIMEOUT)
-        response.raise_for_status()
-        return response.json()
-    except requests.RequestException as e:
-        st.error(f"API request failed: {str(e)}")
-        return {}
-    except Exception as e:
-        st.error(f"Unexpected error: {str(e)}")
-        return {}
+    # Create sample teams
+    team_ids = []
+    team_names = ["Spike Squad", "Net Ninjas", "Bounce Brothers", "Rally Rebels"]
 
+    for team_name in team_names:
+        team_id = add_team(team_name, f"Sample team: {team_name}")
+        team_ids.append(team_id)
 
-def load_sample_data() -> pd.DataFrame:
-    """Load sample roundnet game data."""
-    # Generate sample data for demonstration
-    sample_data = {
-        "game_id": range(1, 101),
-        "date": pd.date_range(start="2024-01-01", periods=100, freq="D"),
-        "team_a": [f"Team {i % 5 + 1}" for i in range(100)],
-        "team_b": [f"Team {(i + 2) % 5 + 1}" for i in range(100)],
-        "score_a": [15 + (i % 6) for i in range(100)],
-        "score_b": [10 + (i % 8) for i in range(100)],
-        "duration_minutes": [25 + (i % 20) for i in range(100)],
-        "location": [f"Court {i % 3 + 1}" for i in range(100)],
-        "game_type": ["Tournament" if i % 3 == 0 else "Practice" for i in range(100)],
-    }
+    # Create sample players
+    players_per_team = 2
+    player_names = [
+        ["Alice", "Bob"],
+        ["Charlie", "Diana"],
+        ["Eve", "Frank"],
+        ["Grace", "Henry"]
+    ]
 
-    return pd.DataFrame(sample_data)
+    for i, team_id in enumerate(team_ids):
+        for player_name in player_names[i]:
+            add_player(player_name, team_id)
 
+    # Create sample games
+    import random
+    game_date = date.today() - timedelta(days=30)
 
-def load_player_data() -> pd.DataFrame:
-    """Load sample player data."""
-    players = ["Alice", "Bob", "Charlie", "Diana", "Eve", "Frank", "Grace", "Henry"]
-    teams = ["Team 1", "Team 2", "Team 3", "Team 4", "Team 5"]
+    for _ in range(15):  # Create 15 sample games
+        team_a_id = random.choice(team_ids)
+        team_b_id = random.choice([t for t in team_ids if t != team_a_id])
 
-    sample_data = {
-        "player_id": range(1, len(players) + 1),
-        "name": players,
-        "team": [teams[i % len(teams)] for i in range(len(players))],
-        "games_played": [45 + (i * 7) for i in range(len(players))],
-        "wins": [30 + (i * 3) for i in range(len(players))],
-        "losses": [15 + (i * 4) for i in range(len(players))],
-        "points_scored": [450 + (i * 50) for i in range(len(players))],
-        "points_conceded": [320 + (i * 30) for i in range(len(players))],
-    }
+        score_a = random.randint(12, 21)
+        score_b = random.randint(12, 21)
 
-    return pd.DataFrame(sample_data)
+        # Make sure there's usually a winner
+        if abs(score_a - score_b) < 2:
+            if random.choice([True, False]):
+                score_a = max(score_a, score_b) + random.randint(1, 3)
+            else:
+                score_b = max(score_a, score_b) + random.randint(1, 3)
 
+        add_game(
+            team_a_id=team_a_id,
+            team_b_id=team_b_id,
+            score_a=score_a,
+            score_b=score_b,
+            game_date=game_date,
+            duration_minutes=random.randint(20, 45),
+            location=f"Court {random.randint(1, 3)}",
+            game_type=random.choice(["Tournament", "Practice", "Casual"])
+        )
 
-def save_data_to_csv(df: pd.DataFrame, filename: str) -> bool:
-    """Save DataFrame to CSV file."""
-    try:
-        file_path = Path(DEFAULT_DATA_PATH) / filename
-        file_path.parent.mkdir(parents=True, exist_ok=True)
-        df.to_csv(file_path, index=False)
-        return True
-    except Exception as e:
-        st.error(f"Error saving data: {str(e)}")
-        return False
+        game_date += timedelta(days=random.randint(1, 3))
+
+    st.session_state.sample_data_created = True
 
 
 def validate_data(df: pd.DataFrame, required_columns: List[str]) -> bool:

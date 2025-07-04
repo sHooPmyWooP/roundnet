@@ -3,78 +3,99 @@
 import plotly.graph_objects as go
 import plotly.express as px
 import pandas as pd
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 import numpy as np
+from datetime import datetime, timedelta
 
 from roundnet.config.settings import DEFAULT_CHART_HEIGHT
+from roundnet.data.manager import get_team_stats, get_games, get_teams
 
 
-def create_sample_chart() -> go.Figure:
-    """Create a sample chart for demonstration."""
-    # Generate sample data
-    dates = pd.date_range(start="2024-01-01", end="2024-12-31", freq="W")
-    wins = np.random.poisson(3, len(dates))
-    losses = np.random.poisson(2, len(dates))
+def create_games_over_time_chart() -> go.Figure:
+    """Create a chart showing games played over time."""
+    games = get_games()
 
-    df = pd.DataFrame({
-        "Date": dates,
-        "Wins": wins,
-        "Losses": losses,
-        "Games": wins + losses
-    })
+    if not games:
+        # Return empty chart
+        fig = go.Figure()
+        fig.add_annotation(
+            text="No games recorded yet",
+            xref="paper", yref="paper",
+            x=0.5, y=0.5, showarrow=False,
+            font=dict(size=16)
+        )
+        fig.update_layout(
+            title="Games Over Time",
+            height=DEFAULT_CHART_HEIGHT,
+            xaxis_title="Date",
+            yaxis_title="Number of Games"
+        )
+        return fig
 
-    # Create the chart
+    # Convert games to DataFrame for easier processing
+    game_dates = []
+    for game in games:
+        game_date = game['date']
+        if isinstance(game_date, str):
+            game_date = datetime.strptime(game_date, '%Y-%m-%d').date()
+        game_dates.append(game_date)
+
+    # Count games by date
+    date_counts = pd.Series(game_dates).value_counts().sort_index()
+
+    # Create cumulative sum for total games over time
+    cumulative_games = date_counts.cumsum()
+
     fig = go.Figure()
 
     fig.add_trace(go.Scatter(
-        x=df["Date"],
-        y=df["Wins"],
+        x=cumulative_games.index,
+        y=cumulative_games.values,
         mode="lines+markers",
-        name="Wins",
+        name="Total Games",
         line=dict(color="#2E8B57", width=3),
         marker=dict(size=6)
     ))
 
-    fig.add_trace(go.Scatter(
-        x=df["Date"],
-        y=df["Losses"],
-        mode="lines+markers",
-        name="Losses",
-        line=dict(color="#DC143C", width=3),
-        marker=dict(size=6)
-    ))
-
     fig.update_layout(
-        title="Games Won vs Lost Over Time",
+        title="Cumulative Games Over Time",
         xaxis_title="Date",
-        yaxis_title="Number of Games",
+        yaxis_title="Total Games",
         height=DEFAULT_CHART_HEIGHT,
         hovermode="x unified",
-        showlegend=True,
-        legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=1.02,
-            xanchor="right",
-            x=1
-        )
+        showlegend=True
     )
 
     return fig
 
 
-def create_win_rate_chart(data: Dict[str, Any]) -> go.Figure:
-    """Create a win rate chart."""
-    # Sample data - replace with actual data processing
-    teams = ["Team Alpha", "Team Beta", "Team Gamma", "Team Delta"]
-    win_rates = [0.75, 0.68, 0.82, 0.59]
+def create_win_rate_chart() -> go.Figure:
+    """Create a win rate chart for all teams."""
+    team_stats = get_team_stats()
+
+    if team_stats.empty:
+        # Return empty chart
+        fig = go.Figure()
+        fig.add_annotation(
+            text="No team data available",
+            xref="paper", yref="paper",
+            x=0.5, y=0.5, showarrow=False,
+            font=dict(size=16)
+        )
+        fig.update_layout(
+            title="Team Win Rates",
+            height=DEFAULT_CHART_HEIGHT,
+            xaxis_title="Team",
+            yaxis_title="Win Rate"
+        )
+        return fig
 
     fig = go.Figure(data=[
         go.Bar(
-            x=teams,
-            y=win_rates,
+            x=team_stats['team_name'],
+            y=team_stats['win_rate'],
             marker_color=px.colors.qualitative.Set3,
-            text=[f"{rate:.1%}" for rate in win_rates],
+            text=[f"{rate:.1%}" for rate in team_stats['win_rate']],
             textposition="auto"
         )
     ])
@@ -90,16 +111,39 @@ def create_win_rate_chart(data: Dict[str, Any]) -> go.Figure:
     return fig
 
 
-def create_score_distribution_chart(data: Dict[str, Any]) -> go.Figure:
-    """Create a score distribution chart."""
-    # Sample data
-    scores = np.random.normal(15, 3, 1000)
-    scores = scores[scores > 0]  # Remove negative scores
+def create_score_distribution_chart() -> go.Figure:
+    """Create a score distribution chart from actual game data."""
+    games = get_games()
+
+    if not games:
+        # Return empty chart
+        fig = go.Figure()
+        fig.add_annotation(
+            text="No game data available",
+            xref="paper", yref="paper",
+            x=0.5, y=0.5, showarrow=False,
+            font=dict(size=16)
+        )
+        fig.update_layout(
+            title="Score Distribution",
+            height=DEFAULT_CHART_HEIGHT,
+            xaxis_title="Score",
+            yaxis_title="Frequency"
+        )
+        return fig
+
+    # Collect all scores
+    all_scores = []
+    for game in games:
+        all_scores.extend([game['score_a'], game['score_b']])
+
+    if not all_scores:
+        return create_score_distribution_chart()  # Return empty chart
 
     fig = go.Figure(data=[
         go.Histogram(
-            x=scores,
-            nbinsx=20,
+            x=all_scores,
+            nbinsx=max(10, len(set(all_scores))),
             marker_color="#4CAF50",
             opacity=0.7
         )
@@ -109,6 +153,63 @@ def create_score_distribution_chart(data: Dict[str, Any]) -> go.Figure:
         title="Score Distribution",
         xaxis_title="Score",
         yaxis_title="Frequency",
+        height=DEFAULT_CHART_HEIGHT
+    )
+
+    return fig
+
+
+def create_team_performance_chart() -> go.Figure:
+    """Create a comprehensive team performance chart."""
+    team_stats = get_team_stats()
+
+    if team_stats.empty:
+        # Return empty chart
+        fig = go.Figure()
+        fig.add_annotation(
+            text="No team performance data available",
+            xref="paper", yref="paper",
+            x=0.5, y=0.5, showarrow=False,
+            font=dict(size=16)
+        )
+        fig.update_layout(
+            title="Team Performance Overview",
+            height=DEFAULT_CHART_HEIGHT
+        )
+        return fig
+
+    fig = go.Figure()
+
+    # Add wins
+    fig.add_trace(go.Bar(
+        name='Wins',
+        x=team_stats['team_name'],
+        y=team_stats['wins'],
+        marker_color='#2E8B57'
+    ))
+
+    # Add losses
+    fig.add_trace(go.Bar(
+        name='Losses',
+        x=team_stats['team_name'],
+        y=team_stats['losses'],
+        marker_color='#DC143C'
+    ))
+
+    # Add draws if any
+    if 'draws' in team_stats.columns and team_stats['draws'].sum() > 0:
+        fig.add_trace(go.Bar(
+            name='Draws',
+            x=team_stats['team_name'],
+            y=team_stats['draws'],
+            marker_color='#FFD700'
+        ))
+
+    fig.update_layout(
+        title='Team Performance Overview',
+        xaxis_title='Team',
+        yaxis_title='Number of Games',
+        barmode='stack',
         height=DEFAULT_CHART_HEIGHT
     )
 
