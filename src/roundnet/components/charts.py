@@ -7,7 +7,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 from roundnet.config.settings import DEFAULT_CHART_HEIGHT
-from roundnet.data.manager import get_games, get_team_stats
+from roundnet.data.manager import get_games
 
 
 def create_games_over_time_chart() -> go.Figure:
@@ -70,7 +70,8 @@ def create_games_over_time_chart() -> go.Figure:
 
 def create_win_rate_chart() -> go.Figure:
     """Create a win rate chart for all teams."""
-    team_stats = get_team_stats()
+    # team_stats = get_team_stats()  # Removed - no longer using teams
+    team_stats = pd.DataFrame()  # Empty dataframe for now
 
     if team_stats.empty:
         # Return empty chart
@@ -160,7 +161,8 @@ def create_score_distribution_chart() -> go.Figure:
 
 def create_team_performance_chart() -> go.Figure:
     """Create a comprehensive team performance chart."""
-    team_stats = get_team_stats()
+    # team_stats = get_team_stats()  # Removed - no longer using teams
+    team_stats = pd.DataFrame()  # Empty dataframe for now
 
     if team_stats.empty:
         # Return empty chart

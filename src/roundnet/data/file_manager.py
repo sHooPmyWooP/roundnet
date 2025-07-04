@@ -5,7 +5,7 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
-from roundnet.data.models import Game, Partnership, Player, PlayingDay
+from roundnet.data.models import Game, Partnership, Player
 from roundnet.data.team_generator import TeamGenerator
 
 
@@ -18,7 +18,6 @@ class FileDataManager:
         self.data_dir.mkdir(exist_ok=True)
 
         self.players_file = self.data_dir / "players.json"
-        self.playing_days_file = self.data_dir / "playing_days.json"
         self.games_file = self.data_dir / "games.json"
         self.partnerships_file = self.data_dir / "partnerships.json"
 
@@ -84,73 +83,17 @@ class FileDataManager:
                 return player
         return None
 
-    # Playing day methods
-    def get_playing_days(self) -> list[PlayingDay]:
-        """Get all playing days."""
-        data = self._load_json_file(self.playing_days_file)
-        return [PlayingDay.from_dict(item) for item in data]
-
-    def add_playing_day(self, date: date, location: str = "", description: str = "") -> PlayingDay:
-        """Add a new playing day."""
-        playing_day = PlayingDay(date=date, location=location, description=description)
-        playing_days = self.get_playing_days()
-        playing_days.append(playing_day)
-
-        data = [pd.to_dict() for pd in playing_days]
-        self._save_json_file(self.playing_days_file, data)
-        return playing_day
-
-    def update_playing_day(self, playing_day: PlayingDay) -> None:
-        """Update an existing playing day."""
-        playing_days = self.get_playing_days()
-        for i, pd in enumerate(playing_days):
-            if pd.id == playing_day.id:
-                playing_days[i] = playing_day
-                break
-
-        data = [pd.to_dict() for pd in playing_days]
-        self._save_json_file(self.playing_days_file, data)
-
-    def delete_playing_day(self, playing_day_id: str) -> None:
-        """Delete a playing day."""
-        playing_days = self.get_playing_days()
-        playing_days = [pd for pd in playing_days if pd.id != playing_day_id]
-
-        data = [pd.to_dict() for pd in playing_days]
-        self._save_json_file(self.playing_days_file, data)
-
-    def get_playing_day_by_id(self, playing_day_id: str) -> PlayingDay | None:
-        """Get playing day by ID."""
-        playing_days = self.get_playing_days()
-        for playing_day in playing_days:
-            if playing_day.id == playing_day_id:
-                return playing_day
-        return None
-
-    def assign_players_to_playing_day(self, playing_day_id: str, player_ids: list[str]) -> None:
-        """Assign players to a playing day."""
-        playing_day = self.get_playing_day_by_id(playing_day_id)
-        if playing_day:
-            playing_day.player_ids = player_ids
-            self.update_playing_day(playing_day)
-
-    def generate_teams_for_playing_day(self, playing_day_id: str, algorithm: str = "random") -> list[list[str]]:
-        """Generate teams for a playing day using the specified algorithm."""
-        playing_day = self.get_playing_day_by_id(playing_day_id)
-        if not playing_day or len(playing_day.player_ids) < 2:
+    # Team generation methods
+    def generate_teams(self, player_ids: list[str], algorithm: str = "random") -> list[list[str]]:
+        """Generate teams for the given players using the specified algorithm."""
+        if len(player_ids) < 2:
             return []
 
         players = self.get_players()
         partnerships = self.get_partnerships()
 
         generator = TeamGenerator(players, partnerships)
-        teams = generator.generate_teams(playing_day.player_ids, algorithm)
-
-        # Update the playing day with generated teams
-        playing_day.generated_teams = teams
-        playing_day.team_generation_algorithm = algorithm
-        self.update_playing_day(playing_day)
-
+        teams = generator.generate_teams(player_ids, algorithm)
         return teams
 
     # Game methods
@@ -159,20 +102,19 @@ class FileDataManager:
         data = self._load_json_file(self.games_file)
         return [Game.from_dict(item) for item in data]
 
-    def add_game(self, playing_day_id: str, team_a_player_ids: list[str],
-                 team_b_player_ids: list[str], team_a_wins: bool = False,
-                 team_b_wins: bool = False, is_tie: bool = False,
-                 duration_minutes: int = 30, notes: str = "") -> Game:
+    def add_game(self, team_a_player_ids: list[str], team_b_player_ids: list[str], 
+                 team_a_wins: bool = False, team_b_wins: bool = False, is_tie: bool = False,
+                 duration_minutes: int = 30, notes: str = "", algorithm_used: str = "random") -> Game:
         """Add a new game."""
         game = Game(
-            playing_day_id=playing_day_id,
             team_a_player_ids=team_a_player_ids,
             team_b_player_ids=team_b_player_ids,
             team_a_wins=team_a_wins,
             team_b_wins=team_b_wins,
             is_tie=is_tie,
             duration_minutes=duration_minutes,
-            notes=notes
+            notes=notes,
+            algorithm_used=algorithm_used
         )
 
         games = self.get_games()
@@ -196,11 +138,6 @@ class FileDataManager:
 
         data = [g.to_dict() for g in games]
         self._save_json_file(self.games_file, data)
-
-    def get_games_for_playing_day(self, playing_day_id: str) -> list[Game]:
-        """Get all games for a specific playing day."""
-        games = self.get_games()
-        return [g for g in games if g.playing_day_id == playing_day_id]
 
     # Partnership methods
     def get_partnerships(self) -> list[Partnership]:
@@ -272,15 +209,16 @@ class FileDataManager:
 
                 self.update_player(player)
 
-    def get_recent_playing_days(self, days: int = 30) -> list[PlayingDay]:
-        """Get recent playing days."""
-        playing_days = self.get_playing_days()
+    def get_recent_games(self, days: int = 30) -> list[Game]:
+        """Get recent games."""
+        games = self.get_games()
         recent_date = datetime.now().date()
 
-        recent_days = []
-        for pd in playing_days:
-            days_diff = (recent_date - pd.date).days
+        recent_games = []
+        for game in games:
+            game_date = game.created_at.date()
+            days_diff = (recent_date - game_date).days
             if days_diff <= days:
-                recent_days.append(pd)
+                recent_games.append(game)
 
-        return sorted(recent_days, key=lambda x: x.date, reverse=True)
+        return sorted(recent_games, key=lambda x: x.created_at, reverse=True)

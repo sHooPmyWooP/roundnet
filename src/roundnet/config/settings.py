@@ -3,21 +3,8 @@
 import os
 
 # App configuration
-APP_TITLE = "Roundnet Player Management"
-APP_DESCRIPTION = """
-🏐 **Welcome to the Roundnet Player Management System!**
-
-Organize players, create playing days, and generate balanced teams with intelligent algorithms.
-Track performance and partnerships with persistent file-based storage.
-
-**Features:**
-- 👤 Create and manage players with skill levels
-- 📅 Organize playing days and assign players
-- � Generate balanced teams using multiple algorithms
-- 🎯 Record game results (wins/losses/ties)
-- 📊 Track player statistics and partnerships
-- � Persistent file-based data storage
-"""
+APP_TITLE = "Roundnet-Management"
+APP_DESCRIPTION = """"""
 
 # Data configuration
 DEFAULT_DATA_PATH = "data/"

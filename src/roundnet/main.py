@@ -1,30 +1,55 @@
-"""Main Streamlit application for roundnet player and playing day management."""
+"""Main Streamlit application for roundnet game management and tracking."""
 
 from datetime import datetime
 
+import pandas as pd
 import streamlit as st
 
 from roundnet.components.forms import (
     create_game_form,
     create_player_form,
-    create_playing_day_form,
     generate_teams_interface,
+    manage_current_players,
     manage_players_section,
-    manage_playing_day_players,
-    manage_playing_days_section,
+    quick_game_interface,
 )
 from roundnet.components.sidebar import render_sidebar
 from roundnet.config.settings import APP_DESCRIPTION, APP_TITLE
 from roundnet.data.manager import (
-    get_games_for_playing_day,
     get_partnership_stats,
     get_player_by_id,
     get_player_stats,
     get_players,
-    get_playing_days,
     get_recent_games,
     initialize_session_state,
 )
+
+
+def show_quick_games():
+    """Display the quick game creation interface - the new main page."""
+    st.header("🏐 Quick Game Setup")
+
+    players = get_players()
+
+    if len(players) < 4:
+        st.warning("⚠️ You need at least 4 players to create games.")
+
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("➕ Add Players", help="Navigate to add new players"):
+                st.session_state.navigation = "Manage Players"
+                st.rerun()
+
+        with col2:
+            if st.button("📚 Create Sample Data", help="Add sample players to get started"):
+                from roundnet.data.loader import create_sample_data
+                create_sample_data()
+                st.success("Sample data created!")
+                st.rerun()
+        return
+
+    # Quick game interface
+    quick_game_interface()
 
 
 def show_dashboard():
@@ -33,44 +58,42 @@ def show_dashboard():
 
     # Get current data for metrics
     players = get_players()
-    playing_days = get_playing_days()
     recent_games = get_recent_games(7)
 
     # Welcome section for new users
-    if not players and not playing_days:
-        st.info("👋 **Welcome to Roundnet Player Management!** Start by adding players and creating playing days.")
+    if not players:
+        st.info("👋 **Welcome to Roundnet Player Management!** Start by adding players.")
 
         # Offer to create sample data
         st.subheader("🚀 Quick Start")
         col1, col2 = st.columns(2)
 
         with col1:
-            if st.button("📚 Create Sample Data", help="Add some sample players and playing days"):
+            if st.button("📚 Create Sample Data", help="Add some sample players and games"):
                 from roundnet.data.loader import create_sample_data
                 create_sample_data()
                 st.success("Sample data created! Refresh the page or navigate to see the changes.")
                 st.rerun()
 
         with col2:
-            if st.button("➕ Start Fresh", help="Begin by adding your own players and playing days"):
-                st.info("💡 Use the sidebar to navigate to 'Add Data' to start adding players and playing days!")
+            if st.button("➕ Start Fresh", help="Begin by adding your own players"):
+                st.info("💡 Use the sidebar to navigate to 'Add Data' to start adding players!")
 
         return
 
     # Top metrics
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3 = st.columns(3)
     with col1:
         st.metric("Total Players", len(players))
     with col2:
-        st.metric("Playing Days", len(playing_days))
+        from roundnet.data.manager import get_games
+        all_games = get_games()
+        st.metric("Total Games", len(all_games))
     with col3:
-        total_games = sum(len(get_games_for_playing_day(pd['id'])) for pd in playing_days)
-        st.metric("Total Games", total_games)
-    with col4:
         st.metric("Recent Games", len(recent_games))
 
     # Player statistics section
-    st.subheader("� Player Performance")
+    st.subheader("🏆 Player Performance")
     player_stats = get_player_stats()
 
     if not player_stats.empty:
@@ -99,28 +122,43 @@ def show_dashboard():
         with col1:
             st.write("**Most Frequent Partnerships:**")
             top_partnerships = partnership_stats.head(5)
-            for _, partnership in top_partnerships.iterrows():
-                st.write(f"👥 {partnership['player_a_name']} & {partnership['player_b_name']}: {partnership['times_together']} games")
+            if len(top_partnerships) > 0:
+                for _, partnership in top_partnerships.iterrows():
+                    games_text = "game" if partnership['times_together'] == 1 else "games"
+                    st.write(f"👥 {partnership['player_a_name']} & {partnership['player_b_name']}: {partnership['times_together']} {games_text}")
+            else:
+                st.info("No partnership data available yet.")
 
         with col2:
             st.write("**Best Partnerships by Win Rate:**")
-            best_partnerships = partnership_stats[partnership_stats['times_together'] >= 2].nlargest(5, 'win_rate_together')
-            for _, partnership in best_partnerships.iterrows():
-                st.write(f"🏅 {partnership['player_a_name']} & {partnership['player_b_name']}: {partnership['win_rate_together']:.1%}")
+            # Show partnerships with at least 1 game together
+            best_partnerships = partnership_stats[partnership_stats['times_together'] >= 1].nlargest(5, 'win_rate_together')
+            if len(best_partnerships) > 0:
+                for _, partnership in best_partnerships.iterrows():
+                    games_text = "game" if partnership['times_together'] == 1 else "games"
+                    st.write(f"🏅 {partnership['player_a_name']} & {partnership['player_b_name']}: {partnership['win_rate_together']:.1%} ({partnership['wins_together']}/{partnership['times_together']} {games_text})")
+            else:
+                st.info("No partnership data available yet.")
+    else:
+        st.subheader("🤝 Partnership Statistics")
+        st.info("No partnerships recorded yet. Play some games to see partnership statistics!")
 
     # Recent activity
     st.subheader("🏐 Recent Activity")
 
     if recent_games:
         for game in recent_games[:5]:  # Show last 5 games
-            date_str = game['playing_day_date']
-            if hasattr(date_str, 'strftime'):
-                date_str = date_str.strftime('%Y-%m-%d')
+            date_str = game['created_at']
+            if isinstance(date_str, str):
+                try:
+                    date_obj = datetime.fromisoformat(date_str)
+                    date_str = date_obj.strftime('%Y-%m-%d %H:%M')
+                except:
+                    date_str = str(date_str)
             else:
-                date_str = str(date_str)
+                date_str = date_str.strftime('%Y-%m-%d %H:%M')
 
             # Get player names
-
             team_a_names = []
             team_b_names = []
 
@@ -141,8 +179,7 @@ def show_dashboard():
             else:
                 result_text = f"🤝 **{' & '.join(team_a_names)}** tied with **{' & '.join(team_b_names)}**"
 
-            location_str = f" at {game['playing_day_location']}" if game['playing_day_location'] else ""
-            st.info(f"{date_str}{location_str}: {result_text}")
+            st.info(f"{date_str}: {result_text}")
     else:
         st.info("No recent games to display.")
 
@@ -151,39 +188,48 @@ def show_add_data():
     """Display forms for adding new data."""
     st.header("➕ Add New Data")
 
-    tab1, tab2, tab3 = st.tabs(["👤 Add Player", "� Add Playing Day", "🎯 Record Game"])
+    tab1, tab2, tab3 = st.tabs(["👤 Add Player", "🎯 Select Players", "� Record Game"])
 
     with tab1:
         create_player_form()
 
     with tab2:
-        create_playing_day_form()
+        manage_current_players()
 
     with tab3:
         create_game_form()
+
+
+def show_manage_players():
+    """Display player management interface."""
+    st.header("👥 Manage Players")
+
+    tab1, tab2 = st.tabs(["➕ Add Player", "⚙️ Manage Existing"])
+
+    with tab1:
+        create_player_form()
+
+    with tab2:
+        manage_players_section()
 
 
 def show_manage_data():
     """Display management interface for existing data."""
     st.header("⚙️ Manage Data")
 
-    tab1, tab2, tab3, tab4 = st.tabs([
+    tab1, tab2, tab3 = st.tabs([
         "👥 Manage Players",
-        "📅 Manage Playing Days",
-        "🎯 Assign Players",
-        "� Generate Teams"
+        "🎯 Select Players", 
+        "⚖️ Generate Teams"
     ])
 
     with tab1:
         manage_players_section()
 
     with tab2:
-        manage_playing_days_section()
+        manage_current_players()
 
     with tab3:
-        manage_playing_day_players()
-
-    with tab4:
         generate_teams_interface()
 
 
@@ -231,44 +277,6 @@ def show_statistics():
     else:
         st.info("No partnership statistics available yet. Record some games to see partnership data.")
 
-    # Playing day summary
-    st.subheader("📅 Playing Day Summary")
-    playing_days = get_playing_days()
-
-    if playing_days:
-        summary_data = []
-
-        for pd in playing_days:
-            games = get_games_for_playing_day(pd['id'])
-            # Convert date string to datetime for proper pandas sorting
-            date_obj = datetime.fromisoformat(pd['date']).date() if isinstance(pd['date'], str) else pd['date']
-            summary_data.append({
-                'date': date_obj,
-                'location': pd['location'] or 'No location',
-                'players': len(pd['player_ids']),
-                'teams_generated': len(pd['generated_teams']),
-                'games_played': len(games),
-                'algorithm_used': pd['team_generation_algorithm'] if pd['generated_teams'] else 'None'
-            })
-
-        summary_df = pd.DataFrame(summary_data)
-        summary_df = summary_df.sort_values('date', ascending=False)
-
-        st.dataframe(
-            summary_df,
-            use_container_width=True,
-            column_config={
-                "date": st.column_config.DateColumn("Date"),
-                "location": st.column_config.TextColumn("Location"),
-                "players": st.column_config.NumberColumn("Players"),
-                "teams_generated": st.column_config.NumberColumn("Teams"),
-                "games_played": st.column_config.NumberColumn("Games"),
-                "algorithm_used": st.column_config.TextColumn("Algorithm")
-            }
-        )
-    else:
-        st.info("No playing days available yet.")
-
 
 def main() -> None:
     """Main function to run the Streamlit app."""
@@ -291,20 +299,24 @@ def main() -> None:
     sidebar_data = render_sidebar()
 
     # Main content based on navigation
-    page = sidebar_data.get("page", "Dashboard")
+    page = sidebar_data.get("page", "🏐 Quick Games")
 
-    if page == "Dashboard":
+    if page == "🏐 Quick Games":
+        show_quick_games()
+    elif page == "📊 Dashboard":
         show_dashboard()
     elif page == "Add Data":
         show_add_data()
+    elif page == "👥 Manage Players":
+        show_manage_players()
     elif page == "Manage Data":
         show_manage_data()
-    elif page == "Statistics":
+    elif page == "📈 Statistics":
         show_statistics()
 
     # Footer
     st.markdown("---")
-    st.markdown("Built with ❤️ using Streamlit | 🏐 Interactive Roundnet Management")
+    st.markdown("🏐 Interactive Roundnet Management")
 
 
 if __name__ == "__main__":

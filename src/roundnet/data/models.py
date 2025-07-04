@@ -38,42 +38,9 @@ class Player:
     def from_dict(cls, data: dict[str, Any]) -> 'Player':
         """Create from dictionary."""
         data = data.copy()
-        if isinstance(data['created_at'], str):
-            data['created_at'] = datetime.fromisoformat(data['created_at'])
-        return cls(**data)
-
-
-@dataclass
-class PlayingDay:
-    """Playing day model representing a session where players gather to play."""
-    id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    date: Date = field(default_factory=lambda: Date.today())
-    location: str = ""
-    description: str = ""
-    player_ids: list[str] = field(default_factory=list)
-    generated_teams: list[list[str]] = field(default_factory=list)  # List of teams (each team is list of player IDs)
-    team_generation_algorithm: str = "random"  # "random", "skill_balanced", "partnership_balanced"
-    created_at: datetime = field(default_factory=datetime.now)
-
-    def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary for serialization."""
-        return {
-            'id': self.id,
-            'date': self.date.isoformat(),
-            'location': self.location,
-            'description': self.description,
-            'player_ids': self.player_ids,
-            'generated_teams': self.generated_teams,
-            'team_generation_algorithm': self.team_generation_algorithm,
-            'created_at': self.created_at.isoformat()
-        }
-
-    @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> 'PlayingDay':
-        """Create from dictionary."""
-        data = data.copy()
-        if isinstance(data['date'], str):
-            data['date'] = datetime.fromisoformat(data['date']).date()
+        # Remove calculated fields that aren't constructor parameters
+        if 'win_rate' in data:
+            del data['win_rate']
         if isinstance(data['created_at'], str):
             data['created_at'] = datetime.fromisoformat(data['created_at'])
         return cls(**data)
@@ -83,7 +50,6 @@ class PlayingDay:
 class Game:
     """Game model for tracking individual game results."""
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    playing_day_id: str = ""
     team_a_player_ids: list[str] = field(default_factory=list)
     team_b_player_ids: list[str] = field(default_factory=list)
     team_a_wins: bool = False
@@ -91,13 +57,13 @@ class Game:
     is_tie: bool = False
     duration_minutes: int = 30
     notes: str = ""
+    algorithm_used: str = "random"  # Track which algorithm was used for team generation
     created_at: datetime = field(default_factory=datetime.now)
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             'id': self.id,
-            'playing_day_id': self.playing_day_id,
             'team_a_player_ids': self.team_a_player_ids,
             'team_b_player_ids': self.team_b_player_ids,
             'team_a_wins': self.team_a_wins,
@@ -105,6 +71,7 @@ class Game:
             'is_tie': self.is_tie,
             'duration_minutes': self.duration_minutes,
             'notes': self.notes,
+            'algorithm_used': self.algorithm_used,
             'created_at': self.created_at.isoformat()
         }
 
@@ -112,6 +79,9 @@ class Game:
     def from_dict(cls, data: dict[str, Any]) -> 'Game':
         """Create from dictionary."""
         data = data.copy()
+        # Handle legacy data that might have playing_day_id
+        if 'playing_day_id' in data:
+            del data['playing_day_id']
         if isinstance(data['created_at'], str):
             data['created_at'] = datetime.fromisoformat(data['created_at'])
         return cls(**data)

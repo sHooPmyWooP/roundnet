@@ -66,54 +66,21 @@ def update_player_skill(player_id: str, skill_level: int) -> None:
         dm.update_player(player)
 
 
-# Playing day management functions
-def add_playing_day(play_date: date, location: str = "", description: str = "") -> str:
-    """Add a new playing day."""
+# Team generation functions
+def generate_teams(player_ids: list[str], algorithm: str = "random") -> list[list[str]]:
+    """Generate teams for the given players using the specified algorithm."""
     dm = get_data_manager()
-    playing_day = dm.add_playing_day(play_date, location, description)
-    return playing_day.id
-
-
-def get_playing_days() -> list[dict[str, Any]]:
-    """Get all playing days as dictionaries."""
-    dm = get_data_manager()
-    playing_days = dm.get_playing_days()
-    return [pd.to_dict() for pd in playing_days]
-
-
-def get_playing_day_by_id(playing_day_id: str) -> dict[str, Any] | None:
-    """Get playing day by ID as dictionary."""
-    dm = get_data_manager()
-    playing_day = dm.get_playing_day_by_id(playing_day_id)
-    return playing_day.to_dict() if playing_day else None
-
-
-def assign_players_to_playing_day(playing_day_id: str, player_ids: list[str]) -> None:
-    """Assign players to a playing day."""
-    dm = get_data_manager()
-    dm.assign_players_to_playing_day(playing_day_id, player_ids)
-
-
-def generate_teams_for_playing_day(playing_day_id: str, algorithm: str = "random") -> list[list[str]]:
-    """Generate teams for a playing day."""
-    dm = get_data_manager()
-    return dm.generate_teams_for_playing_day(playing_day_id, algorithm)
-
-
-def delete_playing_day(playing_day_id: str) -> None:
-    """Delete a playing day."""
-    dm = get_data_manager()
-    dm.delete_playing_day(playing_day_id)
+    return dm.generate_teams(player_ids, algorithm)
 
 
 # Game management functions
-def add_game(playing_day_id: str, team_a_player_ids: list[str], team_b_player_ids: list[str],
+def add_game(team_a_player_ids: list[str], team_b_player_ids: list[str],
              team_a_wins: bool = False, team_b_wins: bool = False, is_tie: bool = False,
-             duration_minutes: int = 30, notes: str = "") -> str:
+             duration_minutes: int = 30, notes: str = "", algorithm_used: str = "random") -> str:
     """Add a new game."""
     dm = get_data_manager()
-    game = dm.add_game(playing_day_id, team_a_player_ids, team_b_player_ids,
-                       team_a_wins, team_b_wins, is_tie, duration_minutes, notes)
+    game = dm.add_game(team_a_player_ids, team_b_player_ids,
+                       team_a_wins, team_b_wins, is_tie, duration_minutes, notes, algorithm_used)
     return game.id
 
 
@@ -121,13 +88,6 @@ def get_games() -> list[dict[str, Any]]:
     """Get all games as dictionaries."""
     dm = get_data_manager()
     games = dm.get_games()
-    return [g.to_dict() for g in games]
-
-
-def get_games_for_playing_day(playing_day_id: str) -> list[dict[str, Any]]:
-    """Get games for a specific playing day."""
-    dm = get_data_manager()
-    games = dm.get_games_for_playing_day(playing_day_id)
     return [g.to_dict() for g in games]
 
 
@@ -160,20 +120,10 @@ def get_player_stats() -> pd.DataFrame:
 
 
 def get_recent_games(days: int = 7) -> list[dict[str, Any]]:
-    """Get games from recent playing days."""
+    """Get games from recent days."""
     dm = get_data_manager()
-    recent_playing_days = dm.get_recent_playing_days(days)
-
-    all_recent_games = []
-    for playing_day in recent_playing_days:
-        games = dm.get_games_for_playing_day(playing_day.id)
-        for game in games:
-            game_dict = game.to_dict()
-            game_dict['playing_day_date'] = playing_day.date
-            game_dict['playing_day_location'] = playing_day.location
-            all_recent_games.append(game_dict)
-
-    return sorted(all_recent_games, key=lambda x: x['playing_day_date'], reverse=True)
+    recent_games = dm.get_recent_games(days)
+    return [g.to_dict() for g in recent_games]
 
 
 def get_partnership_stats() -> pd.DataFrame:
@@ -202,23 +152,7 @@ def get_partnership_stats() -> pd.DataFrame:
     return pd.DataFrame(stats).sort_values('times_together', ascending=False)
 
 
-# Legacy compatibility functions (for existing code)
-def get_teams() -> list[dict[str, Any]]:
-    """Legacy function - returns empty list since we don't use teams anymore."""
-    return []
-
-
-def get_team_stats() -> pd.DataFrame:
-    """Legacy function - returns empty DataFrame since we don't use teams anymore."""
-    return pd.DataFrame()
-
-
-def add_team(name: str, description: str = "") -> str:
-    """Legacy function - not implemented in new system."""
-    st.warning("Teams are no longer used in this system. Please use Playing Days instead.")
-    return ""
-
-
-def get_team_by_id(team_id: str) -> dict[str, Any] | None:
-    """Legacy function - returns None since we don't use teams anymore."""
-    return None
+def get_partnerships():
+    """Get all partnerships."""
+    dm = get_data_manager()
+    return dm.get_partnerships()

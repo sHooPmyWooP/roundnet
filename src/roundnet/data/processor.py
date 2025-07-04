@@ -127,15 +127,8 @@ def get_head_to_head_record(team_a_id: str, team_b_id: str) -> dict[str, Any]:
 
 def get_player_team_contribution(player_id: str) -> dict[str, Any]:
     """Calculate a player's contribution to their team's performance."""
-    from roundnet.data.manager import get_player_by_id, get_team_stats
-
-    player = get_player_by_id(player_id)
-    if not player or not player.get('team_id'):
-        return {}
-
-    team_stats_df = get_team_stats()
-    if team_stats_df.empty:
-        return {}
+    # NOTE: This function is disabled since we removed the team concept
+    return {}
 
     # Find team stats
     from roundnet.data.manager import get_team_by_id
