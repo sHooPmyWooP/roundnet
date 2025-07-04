@@ -205,6 +205,64 @@ def generate_teams_interface():
                         if player:
                             st.write(f"  - {player['name']} (Skill: {player['skill_level']})")
 
+                # Quick game recording interface
+                if len(playing_day['generated_teams']) >= 2:
+                    st.write("---")
+                    st.write("**Quick Game Recording:**")
+                    
+                    # Generate all possible team matchups
+                    teams = playing_day['generated_teams']
+                    team_names = []
+                    for i, team in enumerate(teams, 1):
+                        names = []
+                        for player_id in team:
+                            player = get_player_by_id(player_id)
+                            if player:
+                                names.append(player['name'])
+                        team_names.append(f"Team {i}: {' & '.join(names)}")
+                    
+                    # Create matchup buttons
+                    for i in range(len(teams)):
+                        for j in range(i + 1, len(teams)):
+                            team_a = teams[i]
+                            team_b = teams[j]
+                            
+                            st.write(f"**{team_names[i]} vs {team_names[j]}**")
+                            
+                            col1, col2, col3 = st.columns(3)
+                            
+                            with col1:
+                                if st.button(f"{team_names[i]} Wins", key=f"team_{i}_wins_{j}"):
+                                    # Record game with team A winning
+                                    add_game(
+                                        playing_day_id, team_a, team_b,
+                                        True, False, False, 30, f"Quick record: {team_names[i]} defeated {team_names[j]}"
+                                    )
+                                    st.success(f"Game recorded: {team_names[i]} wins!")
+                                    st.rerun()
+                            
+                            with col2:
+                                if st.button(f"{team_names[j]} Wins", key=f"team_{j}_wins_{i}"):
+                                    # Record game with team B winning
+                                    add_game(
+                                        playing_day_id, team_a, team_b,
+                                        False, True, False, 30, f"Quick record: {team_names[j]} defeated {team_names[i]}"
+                                    )
+                                    st.success(f"Game recorded: {team_names[j]} wins!")
+                                    st.rerun()
+                            
+                            with col3:
+                                if st.button("Tie", key=f"tie_{i}_{j}"):
+                                    # Record game as tie
+                                    add_game(
+                                        playing_day_id, team_a, team_b,
+                                        False, False, True, 30, f"Quick record: {team_names[i]} vs {team_names[j]} - Tie"
+                                    )
+                                    st.success("Tie game recorded!")
+                                    st.rerun()
+                            
+                            st.write("")  # Add some spacing
+
                 # Show team balance info
                 with st.expander("Team Balance Analysis"):
                     from roundnet.data.file_manager import FileDataManager
