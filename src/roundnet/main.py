@@ -249,10 +249,6 @@ def show_statistics():
                 "win_rate": st.column_config.NumberColumn(
                     "Win Rate",
                     format="%.1%"
-                ),
-                "skill_level": st.column_config.NumberColumn(
-                    "Skill Level",
-                    format="%d"
                 )
             }
         )

@@ -12,7 +12,6 @@ class Player:
     """Player model."""
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
     name: str = ""
-    skill_level: int = 1  # 1-10 scale for team balancing
     total_wins: int = 0
     total_games: int = 0
     created_at: datetime = field(default_factory=datetime.now)
@@ -27,7 +26,6 @@ class Player:
         return {
             'id': self.id,
             'name': self.name,
-            'skill_level': self.skill_level,
             'total_wins': self.total_wins,
             'total_games': self.total_games,
             'win_rate': self.win_rate,

@@ -45,28 +45,6 @@ class TeamGenerator:
 
         return teams
 
-    def skill_balanced_teams(self, player_ids: list[str]) -> list[list[str]]:
-        """Generate teams balanced by skill level."""
-        if len(player_ids) % 2 != 0:
-            raise ValueError("Number of players must be even for team generation")
-
-        # Sort players by skill level (descending)
-        sorted_players = sorted(
-            player_ids,
-            key=lambda pid: self.players[pid].skill_level,
-            reverse=True
-        )
-
-        teams = []
-        # Pair highest with lowest, second highest with second lowest, etc.
-        num_teams = len(sorted_players) // 2
-        for i in range(num_teams):
-            high_skill = sorted_players[i]
-            low_skill = sorted_players[-(i + 1)]
-            teams.append([high_skill, low_skill])
-
-        return teams
-
     def partnership_balanced_teams(self, player_ids: list[str]) -> list[list[str]]:
         """Generate teams trying to minimize players who have played together frequently."""
         if len(player_ids) % 2 != 0:
@@ -128,8 +106,6 @@ class TeamGenerator:
 
         if algorithm == "random":
             return self.random_teams(player_ids)
-        elif algorithm == "skill_balanced":
-            return self.skill_balanced_teams(player_ids)
         elif algorithm == "partnership_balanced":
             return self.partnership_balanced_teams(player_ids)
         elif algorithm == "win_rate_balanced":
@@ -140,7 +116,6 @@ class TeamGenerator:
     def calculate_team_balance_score(self, teams: list[list[str]]) -> dict[str, float]:
         """Calculate various balance metrics for the generated teams."""
         metrics = {
-            'skill_variance': 0.0,
             'win_rate_variance': 0.0,
             'partnership_variance': 0.0,
             'overall_score': 0.0
@@ -148,16 +123,6 @@ class TeamGenerator:
 
         if not teams:
             return metrics
-
-        # Calculate skill level variance between teams
-        team_skills = []
-        for team in teams:
-            team_skill = sum(self.players[pid].skill_level for pid in team) / len(team)
-            team_skills.append(team_skill)
-
-        if len(team_skills) > 1:
-            skill_mean = sum(team_skills) / len(team_skills)
-            metrics['skill_variance'] = sum((skill - skill_mean) ** 2 for skill in team_skills) / len(team_skills)
 
         # Calculate win rate variance between teams
         team_win_rates = []
@@ -182,12 +147,10 @@ class TeamGenerator:
 
         # Calculate overall score as a weighted average of the variances
         # Lower variance = better balance, so we invert the score
-        skill_weight = 0.4
-        win_rate_weight = 0.4
-        partnership_weight = 0.2
+        win_rate_weight = 0.7
+        partnership_weight = 0.3
 
         overall_score = (
-            skill_weight * (1 / (1 + metrics['skill_variance'])) +
             win_rate_weight * (1 / (1 + metrics['win_rate_variance'])) +
             partnership_weight * (1 / (1 + metrics['partnership_variance']))
         )

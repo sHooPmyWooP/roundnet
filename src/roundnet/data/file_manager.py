@@ -46,9 +46,9 @@ class FileDataManager:
         data = self._load_json_file(self.players_file)
         return [Player.from_dict(item) for item in data]
 
-    def add_player(self, name: str, skill_level: int = 5) -> Player:
+    def add_player(self, name: str) -> Player:
         """Add a new player."""
-        player = Player(name=name, skill_level=skill_level)
+        player = Player(name=name)
         players = self.get_players()
         players.append(player)
 

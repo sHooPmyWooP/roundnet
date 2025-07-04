@@ -13,7 +13,6 @@ from roundnet.data.manager import (
     get_player_by_id,
     get_players,
     get_recent_games,
-    update_player_skill,
 )
 
 
@@ -23,14 +22,12 @@ def create_player_form():
 
     with st.form("add_player_form"):
         name = st.text_input("Player Name", placeholder="Enter player name...")
-        skill_level = st.slider("Skill Level", min_value=1, max_value=10, value=5,
-                               help="Rate the player's skill from 1 (beginner) to 10 (expert)")
 
         submitted = st.form_submit_button("Add Player")
 
         if submitted:
             if name.strip():
-                add_player(name.strip(), skill_level)
+                add_player(name.strip())
                 st.success(f"Player '{name}' added successfully!")
                 st.rerun()
             else:
@@ -62,7 +59,7 @@ def manage_current_players():
         cols = st.columns(min(len(current_players), 3))
         for i, player in enumerate(current_players):
             with cols[i % 3]:
-                st.info(f"👤 {player['name']}\nSkill: {player['skill_level']}")
+                st.info(f"👤 {player['name']}")
         
         # Add a prominent button to change/update player selection
         col1, col2 = st.columns([1, 1])
@@ -142,15 +139,14 @@ def generate_teams_interface():
     for player_id in current_player_ids:
         player = get_player_by_id(player_id)
         if player:
-            st.write(f"- {player['name']} (Skill: {player['skill_level']})")
+            st.write(f"- {player['name']}")
 
     # Algorithm selection
     algorithm = st.selectbox(
         "Team Generation Algorithm",
-        ["random", "skill_balanced", "win_rate_balanced", "partnership_balanced"],
+        ["random", "win_rate_balanced", "partnership_balanced"],
         format_func=lambda x: {
             "random": "Random",
-            "skill_balanced": "Skill Balanced",
             "win_rate_balanced": "Win Rate Balanced",
             "partnership_balanced": "Partnership Balanced"
         }[x],
@@ -176,7 +172,7 @@ def generate_teams_interface():
             for player_id in team:
                 player = get_player_by_id(player_id)
                 if player:
-                    team_players.append(f"{player['name']} (S:{player['skill_level']})")
+                    team_players.append(player['name'])
             
             team_name = f"Team {i}"
             team_names.append(team_name)
@@ -244,14 +240,11 @@ def generate_teams_interface():
 
             balance_metrics = generator.calculate_team_balance_score(teams)
 
-            col1, col2, col3 = st.columns(3)
+            col1, col2 = st.columns(2)
             with col1:
-                st.metric("Skill Variance", f"{balance_metrics['skill_variance']:.4f}", 
-                         help="Lower values indicate better skill balance")
-            with col2:
                 st.metric("Win Rate Variance", f"{balance_metrics['win_rate_variance']:.4f}",
                          help="Lower values indicate better experience balance")
-            with col3:
+            with col2:
                 st.metric("Overall Score", f"{balance_metrics['overall_score']:.2f}",
                          help="Higher values indicate better overall balance")
 
@@ -329,28 +322,13 @@ def manage_players_section():
         return
 
     for player in sorted(players, key=lambda x: x['name']):
-        with st.expander(f"{player['name']} (Skill: {player['skill_level']})"):
+        with st.expander(f"{player['name']}"):
             col1, col2 = st.columns([3, 1])
-
+            
             with col1:
                 st.write(f"**Games Played:** {player['total_games']}")
                 st.write(f"**Wins:** {player['total_wins']}")
                 st.write(f"**Win Rate:** {player['win_rate']:.1%}")
-
-                # Update skill level
-                new_skill = st.slider(
-                    "Update Skill Level",
-                    min_value=1,
-                    max_value=10,
-                    value=player['skill_level'],
-                    key=f"skill_{player['id']}"
-                )
-
-                if new_skill != player['skill_level']:
-                    if st.button("Update Skill", key=f"update_{player['id']}"):
-                        update_player_skill(player['id'], new_skill)
-                        st.success("Skill level updated!")
-                        st.rerun()
 
             with col2:
                 if st.button("Delete", key=f"delete_{player['id']}", type="secondary"):

@@ -24,10 +24,10 @@ def initialize_session_state() -> None:
 
 
 # Player management functions
-def add_player(name: str, skill_level: int = 5) -> str:
+def add_player(name: str) -> str:
     """Add a new player."""
     dm = get_data_manager()
-    player = dm.add_player(name, skill_level)
+    player = dm.add_player(name)
     return player.id
 
 
@@ -55,15 +55,6 @@ def delete_player(player_id: str) -> None:
     """Delete a player."""
     dm = get_data_manager()
     dm.delete_player(player_id)
-
-
-def update_player_skill(player_id: str, skill_level: int) -> None:
-    """Update a player's skill level."""
-    dm = get_data_manager()
-    player = dm.get_player_by_id(player_id)
-    if player:
-        player.skill_level = skill_level
-        dm.update_player(player)
 
 
 # Team generation functions
@@ -112,8 +103,7 @@ def get_player_stats() -> pd.DataFrame:
             'games_played': player.total_games,
             'wins': player.total_wins,
             'losses': player.total_games - player.total_wins,
-            'win_rate': player.win_rate,
-            'skill_level': player.skill_level
+            'win_rate': player.win_rate
         })
 
     return pd.DataFrame(stats).sort_values('win_rate', ascending=False)
