@@ -142,7 +142,8 @@ class TeamGenerator:
         metrics = {
             'skill_variance': 0.0,
             'win_rate_variance': 0.0,
-            'partnership_variance': 0.0
+            'partnership_variance': 0.0,
+            'overall_score': 0.0
         }
 
         if not teams:
@@ -178,5 +179,18 @@ class TeamGenerator:
         if len(team_partnership_counts) > 1:
             partnership_mean = sum(team_partnership_counts) / len(team_partnership_counts)
             metrics['partnership_variance'] = sum((count - partnership_mean) ** 2 for count in team_partnership_counts) / len(team_partnership_counts)
+
+        # Calculate overall score as a weighted average of the variances
+        # Lower variance = better balance, so we invert the score
+        skill_weight = 0.4
+        win_rate_weight = 0.4
+        partnership_weight = 0.2
+
+        overall_score = (
+            skill_weight * (1 / (1 + metrics['skill_variance'])) +
+            win_rate_weight * (1 / (1 + metrics['win_rate_variance'])) +
+            partnership_weight * (1 / (1 + metrics['partnership_variance']))
+        )
+        metrics['overall_score'] = overall_score
 
         return metrics

@@ -246,3 +246,25 @@ def create_player_performance_radar(player_stats: dict[str, float]) -> go.Figure
     )
 
     return fig
+
+
+def create_sample_chart() -> go.Figure:
+    """Create a simple sample chart for testing purposes."""
+    fig = go.Figure()
+
+    # Add a simple sample data trace
+    fig.add_trace(go.Scatter(
+        x=[1, 2, 3, 4, 5],
+        y=[2, 4, 3, 5, 1],
+        mode='lines+markers',
+        name='Sample Data'
+    ))
+
+    fig.update_layout(
+        title="Sample Chart",
+        xaxis_title="X Axis",
+        yaxis_title="Y Axis",
+        height=DEFAULT_CHART_HEIGHT
+    )
+
+    return fig

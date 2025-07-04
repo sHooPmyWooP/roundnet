@@ -111,9 +111,9 @@ def test_log_user_action():
     log_user_action("test_action", {"detail": "test"})
 
     assert "user_actions" in st.session_state
-    assert len(st.session_state.user_actions) == 1
+    assert len(st.session_state["user_actions"]) == 1
 
-    action = st.session_state.user_actions[0]
+    action = st.session_state["user_actions"][0]
     assert action["action"] == "test_action"
     assert action["details"]["detail"] == "test"
     assert "timestamp" in action

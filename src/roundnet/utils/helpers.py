@@ -127,6 +127,14 @@ def create_color_scale(values: list[float], colorscale: str = "RdYlGn") -> list[
     colors = []
     for norm_val in normalized:
         color = pc.sample_colorscale(colorscale, norm_val)[0]
+        # Ensure color is in hex format
+        if not color.startswith("#"):
+            # Convert RGB string to hex if needed
+            if color.startswith("rgb"):
+                # Parse rgb(r,g,b) or rgba(r,g,b,a) format
+                rgb_values = color.replace("rgb", "").replace("a", "").strip("()").split(",")
+                r, g, b = [int(float(val.strip())) for val in rgb_values[:3]]
+                color = f"#{r:02x}{g:02x}{b:02x}"
         colors.append(color)
 
     return colors
@@ -145,9 +153,17 @@ def log_user_action(action: str, details: dict[str, Any] | None = None) -> None:
     # In a real application, you would send this to a logging service
     # For now, we'll just store it in session state for debugging
     if "user_actions" not in st.session_state:
-        st.session_state.user_actions = []
+        try:
+            st.session_state.user_actions = []
+        except AttributeError:
+            # Handle case where session_state is a dict (like in tests)
+            st.session_state["user_actions"] = []
 
-    st.session_state.user_actions.append(log_entry)
+    try:
+        st.session_state.user_actions.append(log_entry)
+    except AttributeError:
+        # Handle case where session_state is a dict (like in tests)
+        st.session_state["user_actions"].append(log_entry)
 
 
 def export_data_as_json(data: dict[str, Any], filename: str) -> bytes:

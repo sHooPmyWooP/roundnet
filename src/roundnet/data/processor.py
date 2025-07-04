@@ -77,7 +77,7 @@ def filter_games_by_date_range(start_date: datetime, end_date: datetime) -> list
         if isinstance(game_date, str):
             game_date = datetime.strptime(game_date, '%Y-%m-%d').date()
 
-        if start_date.date() <= game_date <= end_date.date():
+        if start_date <= game_date <= end_date:
             filtered_games.append(game)
 
     return filtered_games
