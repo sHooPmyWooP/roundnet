@@ -30,6 +30,7 @@ class Player:
             'skill_level': self.skill_level,
             'total_wins': self.total_wins,
             'total_games': self.total_games,
+            'win_rate': self.win_rate,
             'created_at': self.created_at.isoformat()
         }
 

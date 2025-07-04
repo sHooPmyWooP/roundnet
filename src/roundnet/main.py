@@ -1,5 +1,6 @@
 """Main Streamlit application for roundnet player and playing day management."""
 
+from datetime import datetime
 
 import streamlit as st
 
@@ -239,8 +240,10 @@ def show_statistics():
 
         for pd in playing_days:
             games = get_games_for_playing_day(pd['id'])
+            # Convert date string to datetime for proper pandas sorting
+            date_obj = datetime.fromisoformat(pd['date']).date() if isinstance(pd['date'], str) else pd['date']
             summary_data.append({
-                'date': pd['date'],
+                'date': date_obj,
                 'location': pd['location'] or 'No location',
                 'players': len(pd['player_ids']),
                 'teams_generated': len(pd['generated_teams']),
