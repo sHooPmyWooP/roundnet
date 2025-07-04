@@ -1,0 +1,74 @@
+[
+  {
+    "id": "dace3bb6-f320-4d49-8c07-369835409f5f",
+    "playing_day_id": "cf54bb39-fa29-4e64-802d-a4b151b91287",
+    "team_a_player_ids": [
+      "fc20a631-10c3-4f34-a3af-6a1adb27ff64",
+      "a748ddd7-92eb-407e-bd5c-7473cd471acd"
+    ],
+    "team_b_player_ids": [
+      "7312c5da-a6f9-4457-b651-19e8149a8a6c",
+      "62861229-6c8d-48b4-bf2c-c2b09f23a4de"
+    ],
+    "team_a_wins": true,
+    "team_b_wins": false,
+    "is_tie": false,
+    "duration_minutes": 25,
+    "notes": "",
+    "created_at": "2025-07-04T20:55:33.941717"
+  },
+  {
+    "id": "18ff224a-6e3d-4fcc-b4f1-b3ae2ef587d1",
+    "playing_day_id": "cf54bb39-fa29-4e64-802d-a4b151b91287",
+    "team_a_player_ids": [
+      "fc20a631-10c3-4f34-a3af-6a1adb27ff64",
+      "a748ddd7-92eb-407e-bd5c-7473cd471acd"
+    ],
+    "team_b_player_ids": [
+      "4a6899fc-5e3f-4276-a68c-186490506431",
+      "be3dbfbb-1ef0-4891-81c4-d26cd3baab15"
+    ],
+    "team_a_wins": false,
+    "team_b_wins": true,
+    "is_tie": false,
+    "duration_minutes": 30,
+    "notes": "",
+    "created_at": "2025-07-04T20:55:33.944064"
+  },
+  {
+    "id": "0a4004b0-5273-4b85-9bdc-937eef493a6c",
+    "playing_day_id": "77475cd8-a915-4c91-b80a-a286830f04ef",
+    "team_a_player_ids": [
+      "4a6899fc-5e3f-4276-a68c-186490506431",
+      "fc20a631-10c3-4f34-a3af-6a1adb27ff64"
+    ],
+    "team_b_player_ids": [
+      "a748ddd7-92eb-407e-bd5c-7473cd471acd",
+      "62861229-6c8d-48b4-bf2c-c2b09f23a4de"
+    ],
+    "team_a_wins": false,
+    "team_b_wins": false,
+    "is_tie": true,
+    "duration_minutes": 35,
+    "notes": "",
+    "created_at": "2025-07-04T20:55:33.947293"
+  },
+  {
+    "id": "5eefaa14-f48b-4bfd-856c-773582ce88f5",
+    "playing_day_id": "77475cd8-a915-4c91-b80a-a286830f04ef",
+    "team_a_player_ids": [
+      "a748ddd7-92eb-407e-bd5c-7473cd471acd",
+      "62861229-6c8d-48b4-bf2c-c2b09f23a4de"
+    ],
+    "team_b_player_ids": [
+      "e25ff7b9-602c-4a2a-b6eb-6181214dbb31",
+      "9c0da4b7-0725-4079-885d-e489572f230f"
+    ],
+    "team_a_wins": true,
+    "team_b_wins": false,
+    "is_tie": false,
+    "duration_minutes": 28,
+    "notes": "",
+    "created_at": "2025-07-04T20:55:33.949485"
+  }
+]

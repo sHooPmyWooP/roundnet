@@ -1,0 +1,38 @@
+[
+  {
+    "id": "418a32cf-0fb6-4bc3-ad3c-8a3b6a10b6aa",
+    "date": "2025-07-04",
+    "location": "Demo Court",
+    "description": "System demonstration",
+    "player_ids": [
+      "bcc123f8-4631-4ed3-874e-fbd0b9c6f9d5",
+      "83db9357-37d9-4791-8021-5cb396fff806",
+      "c65d10dc-76db-4882-8b3b-5e68c6971f57",
+      "b6a20932-49d1-4343-9913-8252347d827a",
+      "aa81d771-821e-4e3a-9fd2-aa179d3713be",
+      "45558ef2-e8ef-4786-a805-f75375084a8d",
+      "1cbf6992-176d-40ed-8d68-9534b9f3f333",
+      "b411936e-83e7-4a94-819f-77457bb58340"
+    ],
+    "generated_teams": [
+      [
+        "bcc123f8-4631-4ed3-874e-fbd0b9c6f9d5",
+        "83db9357-37d9-4791-8021-5cb396fff806"
+      ],
+      [
+        "c65d10dc-76db-4882-8b3b-5e68c6971f57",
+        "b6a20932-49d1-4343-9913-8252347d827a"
+      ],
+      [
+        "aa81d771-821e-4e3a-9fd2-aa179d3713be",
+        "45558ef2-e8ef-4786-a805-f75375084a8d"
+      ],
+      [
+        "1cbf6992-176d-40ed-8d68-9534b9f3f333",
+        "b411936e-83e7-4a94-819f-77457bb58340"
+      ]
+    ],
+    "team_generation_algorithm": "partnership_balanced",
+    "created_at": "2025-07-04T20:53:52.169136"
+  }
+]

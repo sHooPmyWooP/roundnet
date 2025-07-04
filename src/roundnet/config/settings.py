@@ -4,19 +4,20 @@ import os
 from typing import Optional
 
 # App configuration
-APP_TITLE = "Roundnet Analytics Dashboard"
+APP_TITLE = "Roundnet Player Management"
 APP_DESCRIPTION = """
-🏐 **Welcome to the Interactive Roundnet Analytics Dashboard!**
+🏐 **Welcome to the Roundnet Player Management System!**
 
-Manage your roundnet teams, track player performance, and record game results with our easy-to-use web interface.
-No file uploads needed - create and manage everything directly through the app!
+Organize players, create playing days, and generate balanced teams with intelligent algorithms.
+Track performance and partnerships with persistent file-based storage.
 
 **Features:**
-- 🏐 Create and manage teams
-- 👤 Add and organize players
-- 🎯 Record game results
-- 📊 View detailed statistics and analytics
-- 📈 Track performance trends over time
+- 👤 Create and manage players with skill levels
+- 📅 Organize playing days and assign players
+- � Generate balanced teams using multiple algorithms
+- 🎯 Record game results (wins/losses/ties)
+- 📊 Track player statistics and partnerships
+- � Persistent file-based data storage
 """
 
 # Data configuration

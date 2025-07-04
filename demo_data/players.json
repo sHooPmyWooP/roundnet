@@ -1,0 +1,66 @@
+[
+  {
+    "id": "bcc123f8-4631-4ed3-874e-fbd0b9c6f9d5",
+    "name": "Alice",
+    "skill_level": 8,
+    "total_wins": 1,
+    "total_games": 1,
+    "created_at": "2025-07-04T20:53:52.157202"
+  },
+  {
+    "id": "83db9357-37d9-4791-8021-5cb396fff806",
+    "name": "Bob",
+    "skill_level": 6,
+    "total_wins": 1,
+    "total_games": 1,
+    "created_at": "2025-07-04T20:53:52.157441"
+  },
+  {
+    "id": "c65d10dc-76db-4882-8b3b-5e68c6971f57",
+    "name": "Charlie",
+    "skill_level": 7,
+    "total_wins": 0,
+    "total_games": 2,
+    "created_at": "2025-07-04T20:53:52.157691"
+  },
+  {
+    "id": "b6a20932-49d1-4343-9913-8252347d827a",
+    "name": "Diana",
+    "skill_level": 9,
+    "total_wins": 0,
+    "total_games": 2,
+    "created_at": "2025-07-04T20:53:52.158198"
+  },
+  {
+    "id": "aa81d771-821e-4e3a-9fd2-aa179d3713be",
+    "name": "Eve",
+    "skill_level": 5,
+    "total_wins": 1,
+    "total_games": 1,
+    "created_at": "2025-07-04T20:53:52.162914"
+  },
+  {
+    "id": "45558ef2-e8ef-4786-a805-f75375084a8d",
+    "name": "Frank",
+    "skill_level": 6,
+    "total_wins": 1,
+    "total_games": 1,
+    "created_at": "2025-07-04T20:53:52.163422"
+  },
+  {
+    "id": "1cbf6992-176d-40ed-8d68-9534b9f3f333",
+    "name": "Grace",
+    "skill_level": 7,
+    "total_wins": 0,
+    "total_games": 0,
+    "created_at": "2025-07-04T20:53:52.163844"
+  },
+  {
+    "id": "b411936e-83e7-4a94-819f-77457bb58340",
+    "name": "Henry",
+    "skill_level": 8,
+    "total_wins": 0,
+    "total_games": 0,
+    "created_at": "2025-07-04T20:53:52.164391"
+  }
+]

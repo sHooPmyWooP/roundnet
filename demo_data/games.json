@@ -1,0 +1,38 @@
+[
+  {
+    "id": "f73336b3-641d-4ad0-a08f-29bcf1912a59",
+    "playing_day_id": "418a32cf-0fb6-4bc3-ad3c-8a3b6a10b6aa",
+    "team_a_player_ids": [
+      "bcc123f8-4631-4ed3-874e-fbd0b9c6f9d5",
+      "83db9357-37d9-4791-8021-5cb396fff806"
+    ],
+    "team_b_player_ids": [
+      "c65d10dc-76db-4882-8b3b-5e68c6971f57",
+      "b6a20932-49d1-4343-9913-8252347d827a"
+    ],
+    "team_a_wins": true,
+    "team_b_wins": false,
+    "is_tie": false,
+    "duration_minutes": 25,
+    "notes": "Exciting first game!",
+    "created_at": "2025-07-04T20:53:52.175681"
+  },
+  {
+    "id": "a2ff9e2f-1bab-43cc-b759-0f39efeae6da",
+    "playing_day_id": "418a32cf-0fb6-4bc3-ad3c-8a3b6a10b6aa",
+    "team_a_player_ids": [
+      "c65d10dc-76db-4882-8b3b-5e68c6971f57",
+      "b6a20932-49d1-4343-9913-8252347d827a"
+    ],
+    "team_b_player_ids": [
+      "aa81d771-821e-4e3a-9fd2-aa179d3713be",
+      "45558ef2-e8ef-4786-a805-f75375084a8d"
+    ],
+    "team_a_wins": false,
+    "team_b_wins": true,
+    "is_tie": false,
+    "duration_minutes": 30,
+    "notes": "Close second game!",
+    "created_at": "2025-07-04T20:53:52.182080"
+  }
+]
