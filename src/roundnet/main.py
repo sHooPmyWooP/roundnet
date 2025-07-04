@@ -3,7 +3,7 @@
 
 import streamlit as st
 
-from roundnet.components.new_forms import (
+from roundnet.components.forms import (
     create_game_form,
     create_player_form,
     create_playing_day_form,
@@ -45,7 +45,7 @@ def show_dashboard():
 
         with col1:
             if st.button("📚 Create Sample Data", help="Add some sample players and playing days"):
-                from roundnet.data.new_loader import create_sample_data
+                from roundnet.data.loader import create_sample_data
                 create_sample_data()
                 st.success("Sample data created! Refresh the page or navigate to see the changes.")
                 st.rerun()

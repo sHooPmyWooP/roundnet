@@ -1,80 +1,79 @@
-"""Data utilities for the interactive roundnet app."""
+"""Data loader for creating sample data in the roundnet system."""
+
+from datetime import date, timedelta
+
+from roundnet.data.manager import (
+    add_game,
+    add_player,
+    add_playing_day,
+    assign_players_to_playing_day,
+    generate_teams_for_playing_day,
+)
 
 
-import pandas as pd
-import streamlit as st
+def create_sample_data():
+    """Create sample players, playing days, and games for demonstration."""
 
-# Note: This file previously contained file upload and API functionality.
-# The app now uses interactive forms and in-memory storage via manager.py
+    # Create sample players with different skill levels
+    players = [
+        ("Alice Johnson", 8),
+        ("Bob Smith", 6),
+        ("Charlie Brown", 7),
+        ("Diana Prince", 9),
+        ("Eve Wilson", 5),
+        ("Frank Miller", 6),
+        ("Grace Lee", 7),
+        ("Henry Davis", 8)
+    ]
+
+    player_ids = []
+    for name, skill in players:
+        player_id = add_player(name, skill)
+        player_ids.append(player_id)
+
+    # Create sample playing days
+    today = date.today()
+
+    # Playing day 1 - Last week
+    pd1_date = today - timedelta(days=7)
+    pd1_id = add_playing_day(pd1_date, "Stadtpark Norderstedt 🤘", "Entspannte Runde")
+    assign_players_to_playing_day(pd1_id, player_ids[:6])  # 6 players
+    generate_teams_for_playing_day(pd1_id, "skill_balanced")
+
+    # Add some games for this playing day
+    # Get the generated teams and simulate some games
+    from roundnet.data.manager import get_playing_day_by_id
+    pd1 = get_playing_day_by_id(pd1_id)
+    if pd1 and pd1['generated_teams']:
+        teams = pd1['generated_teams']
+        if len(teams) >= 2:
+            # Game 1: Team 1 vs Team 2
+            add_game(pd1_id, teams[0], teams[1], team_a_wins=True, duration_minutes=25)
+            # Game 2: Team 1 vs Team 3 (if exists)
+            if len(teams) >= 3:
+                add_game(pd1_id, teams[0], teams[2], team_b_wins=True, duration_minutes=30)
+
+    # Playing day 2 - Few days ago
+    pd2_date = today - timedelta(days=3)
+    pd2_id = add_playing_day(pd2_date, "Beach Court", "Weekend beach roundnet")
+    assign_players_to_playing_day(pd2_id, player_ids[2:8])  # Different 6 players
+    generate_teams_for_playing_day(pd2_id, "partnership_balanced")
+
+    # Add games for playing day 2
+    pd2 = get_playing_day_by_id(pd2_id)
+    if pd2 and pd2['generated_teams']:
+        teams = pd2['generated_teams']
+        if len(teams) >= 2:
+            add_game(pd2_id, teams[0], teams[1], is_tie=True, duration_minutes=35)
+            if len(teams) >= 3:
+                add_game(pd2_id, teams[1], teams[2], team_a_wins=True, duration_minutes=28)
+
+    # Playing day 3 - Today
+    pd3_id = add_playing_day(today, "Gym A", "Indoor session")
+    assign_players_to_playing_day(pd3_id, player_ids)  # All players
+    generate_teams_for_playing_day(pd3_id, "random")
 
 
 def create_sample_teams_and_games():
-    """Create some sample data for demonstration purposes."""
-    from datetime import date, timedelta
-
-    from roundnet.data.manager import add_game, add_player, add_team
-
-    if st.session_state.get('sample_data_created'):
-        return
-
-    # Create sample teams
-    team_ids = []
-    team_names = ["Spike Squad", "Net Ninjas", "Bounce Brothers", "Rally Rebels"]
-
-    for team_name in team_names:
-        team_id = add_team(team_name, f"Sample team: {team_name}")
-        team_ids.append(team_id)
-
-    # Create sample players
-    player_names = [
-        ["Alice", "Bob"],
-        ["Charlie", "Diana"],
-        ["Eve", "Frank"],
-        ["Grace", "Henry"]
-    ]
-
-    for i, team_id in enumerate(team_ids):
-        for player_name in player_names[i]:
-            add_player(player_name, team_id)
-
-    # Create sample games
-    import random
-    game_date = date.today() - timedelta(days=30)
-
-    for _ in range(15):  # Create 15 sample games
-        team_a_id = random.choice(team_ids)
-        team_b_id = random.choice([t for t in team_ids if t != team_a_id])
-
-        score_a = random.randint(12, 21)
-        score_b = random.randint(12, 21)
-
-        # Make sure there's usually a winner
-        if abs(score_a - score_b) < 2:
-            if random.choice([True, False]):
-                score_a = max(score_a, score_b) + random.randint(1, 3)
-            else:
-                score_b = max(score_a, score_b) + random.randint(1, 3)
-
-        add_game(
-            team_a_id=team_a_id,
-            team_b_id=team_b_id,
-            score_a=score_a,
-            score_b=score_b,
-            game_date=game_date,
-            duration_minutes=random.randint(20, 45),
-            location=f"Court {random.randint(1, 3)}",
-            game_type=random.choice(["Tournament", "Practice", "Casual"])
-        )
-
-        game_date += timedelta(days=random.randint(1, 3))
-
-    st.session_state.sample_data_created = True
-
-
-def validate_data(df: pd.DataFrame, required_columns: list[str]) -> bool:
-    """Validate that DataFrame has required columns."""
-    missing_columns = set(required_columns) - set(df.columns)
-    if missing_columns:
-        st.error(f"Missing required columns: {missing_columns}")
-        return False
-    return True
+    """Legacy function for backward compatibility."""
+    create_sample_data()
