@@ -1,17 +1,16 @@
 """Tests for data processing functionality."""
 
-import pytest
-import pandas as pd
-import numpy as np
 from datetime import datetime, timedelta
 
+import pandas as pd
+
 from roundnet.data.processor import (
-    calculate_win_rate,
-    get_team_statistics,
-    filter_games_by_date,
-    get_recent_games,
     calculate_player_stats,
-    generate_summary_stats
+    calculate_win_rate,
+    filter_games_by_date,
+    generate_summary_stats,
+    get_recent_games,
+    get_team_statistics,
 )
 
 
@@ -151,7 +150,7 @@ def test_generate_summary_stats():
     # Check data types
     assert isinstance(stats["total_games"], int)
     assert isinstance(stats["total_players"], int)
-    assert isinstance(stats["avg_game_duration"], (int, float))
+    assert isinstance(stats["avg_game_duration"], int | float)
     assert isinstance(stats["recent_games"], int)
     assert isinstance(stats["last_updated"], str)
 

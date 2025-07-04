@@ -1,13 +1,13 @@
 """Data management for the roundnet application using file-based persistence."""
 
-import streamlit as st
+from datetime import date
+from typing import Any
+
 import pandas as pd
-from datetime import datetime, date
-from typing import Dict, List, Any, Optional
+import streamlit as st
 
 from roundnet.data.file_manager import FileDataManager
-from roundnet.data.models import Player, PlayingDay, Game
-from roundnet.data.team_generator import TeamGenerator
+from roundnet.data.models import Player
 
 
 def get_data_manager() -> FileDataManager:
@@ -17,7 +17,7 @@ def get_data_manager() -> FileDataManager:
     return st.session_state.data_manager
 
 
-def initialize_session_state():
+def initialize_session_state() -> None:
     """Initialize session state for data storage."""
     # Just ensure the data manager is created
     get_data_manager()
@@ -31,33 +31,33 @@ def add_player(name: str, skill_level: int = 5) -> str:
     return player.id
 
 
-def get_players() -> List[Dict[str, Any]]:
+def get_players() -> list[dict[str, Any]]:
     """Get all players as dictionaries for compatibility."""
     dm = get_data_manager()
     players = dm.get_players()
     return [p.to_dict() for p in players]
 
 
-def get_players_objects() -> List[Player]:
+def get_players_objects() -> list[Player]:
     """Get all players as Player objects."""
     dm = get_data_manager()
     return dm.get_players()
 
 
-def get_player_by_id(player_id: str) -> Optional[Dict[str, Any]]:
+def get_player_by_id(player_id: str) -> dict[str, Any] | None:
     """Get player by ID as dictionary."""
     dm = get_data_manager()
     player = dm.get_player_by_id(player_id)
     return player.to_dict() if player else None
 
 
-def delete_player(player_id: str):
+def delete_player(player_id: str) -> None:
     """Delete a player."""
     dm = get_data_manager()
     dm.delete_player(player_id)
 
 
-def update_player_skill(player_id: str, skill_level: int):
+def update_player_skill(player_id: str, skill_level: int) -> None:
     """Update a player's skill level."""
     dm = get_data_manager()
     player = dm.get_player_by_id(player_id)
@@ -74,40 +74,40 @@ def add_playing_day(play_date: date, location: str = "", description: str = "") 
     return playing_day.id
 
 
-def get_playing_days() -> List[Dict[str, Any]]:
+def get_playing_days() -> list[dict[str, Any]]:
     """Get all playing days as dictionaries."""
     dm = get_data_manager()
     playing_days = dm.get_playing_days()
     return [pd.to_dict() for pd in playing_days]
 
 
-def get_playing_day_by_id(playing_day_id: str) -> Optional[Dict[str, Any]]:
+def get_playing_day_by_id(playing_day_id: str) -> dict[str, Any] | None:
     """Get playing day by ID as dictionary."""
     dm = get_data_manager()
     playing_day = dm.get_playing_day_by_id(playing_day_id)
     return playing_day.to_dict() if playing_day else None
 
 
-def assign_players_to_playing_day(playing_day_id: str, player_ids: List[str]):
+def assign_players_to_playing_day(playing_day_id: str, player_ids: list[str]) -> None:
     """Assign players to a playing day."""
     dm = get_data_manager()
     dm.assign_players_to_playing_day(playing_day_id, player_ids)
 
 
-def generate_teams_for_playing_day(playing_day_id: str, algorithm: str = "random") -> List[List[str]]:
+def generate_teams_for_playing_day(playing_day_id: str, algorithm: str = "random") -> list[list[str]]:
     """Generate teams for a playing day."""
     dm = get_data_manager()
     return dm.generate_teams_for_playing_day(playing_day_id, algorithm)
 
 
-def delete_playing_day(playing_day_id: str):
+def delete_playing_day(playing_day_id: str) -> None:
     """Delete a playing day."""
     dm = get_data_manager()
     dm.delete_playing_day(playing_day_id)
 
 
 # Game management functions
-def add_game(playing_day_id: str, team_a_player_ids: List[str], team_b_player_ids: List[str],
+def add_game(playing_day_id: str, team_a_player_ids: list[str], team_b_player_ids: list[str],
              team_a_wins: bool = False, team_b_wins: bool = False, is_tie: bool = False,
              duration_minutes: int = 30, notes: str = "") -> str:
     """Add a new game."""
@@ -117,21 +117,21 @@ def add_game(playing_day_id: str, team_a_player_ids: List[str], team_b_player_id
     return game.id
 
 
-def get_games() -> List[Dict[str, Any]]:
+def get_games() -> list[dict[str, Any]]:
     """Get all games as dictionaries."""
     dm = get_data_manager()
     games = dm.get_games()
     return [g.to_dict() for g in games]
 
 
-def get_games_for_playing_day(playing_day_id: str) -> List[Dict[str, Any]]:
+def get_games_for_playing_day(playing_day_id: str) -> list[dict[str, Any]]:
     """Get games for a specific playing day."""
     dm = get_data_manager()
     games = dm.get_games_for_playing_day(playing_day_id)
     return [g.to_dict() for g in games]
 
 
-def delete_game(game_id: str):
+def delete_game(game_id: str) -> None:
     """Delete a game."""
     dm = get_data_manager()
     dm.delete_game(game_id)
@@ -141,7 +141,7 @@ def delete_game(game_id: str):
 def get_player_stats() -> pd.DataFrame:
     """Calculate player statistics."""
     players = get_players_objects()
-    
+
     if not players:
         return pd.DataFrame()
 
@@ -159,11 +159,11 @@ def get_player_stats() -> pd.DataFrame:
     return pd.DataFrame(stats).sort_values('win_rate', ascending=False)
 
 
-def get_recent_games(days: int = 7) -> List[Dict[str, Any]]:
+def get_recent_games(days: int = 7) -> list[dict[str, Any]]:
     """Get games from recent playing days."""
     dm = get_data_manager()
     recent_playing_days = dm.get_recent_playing_days(days)
-    
+
     all_recent_games = []
     for playing_day in recent_playing_days:
         games = dm.get_games_for_playing_day(playing_day.id)
@@ -172,7 +172,7 @@ def get_recent_games(days: int = 7) -> List[Dict[str, Any]]:
             game_dict['playing_day_date'] = playing_day.date
             game_dict['playing_day_location'] = playing_day.location
             all_recent_games.append(game_dict)
-    
+
     return sorted(all_recent_games, key=lambda x: x['playing_day_date'], reverse=True)
 
 
@@ -181,15 +181,15 @@ def get_partnership_stats() -> pd.DataFrame:
     dm = get_data_manager()
     partnerships = dm.get_partnerships()
     players = {p.id: p for p in dm.get_players()}
-    
+
     if not partnerships:
         return pd.DataFrame()
-    
+
     stats = []
     for partnership in partnerships:
         player_a = players.get(partnership.player_a_id)
         player_b = players.get(partnership.player_b_id)
-        
+
         if player_a and player_b:
             stats.append({
                 'player_a_name': player_a.name,
@@ -198,12 +198,12 @@ def get_partnership_stats() -> pd.DataFrame:
                 'wins_together': partnership.wins_together,
                 'win_rate_together': partnership.win_rate_together
             })
-    
+
     return pd.DataFrame(stats).sort_values('times_together', ascending=False)
 
 
 # Legacy compatibility functions (for existing code)
-def get_teams() -> List[Dict[str, Any]]:
+def get_teams() -> list[dict[str, Any]]:
     """Legacy function - returns empty list since we don't use teams anymore."""
     return []
 
@@ -219,6 +219,6 @@ def add_team(name: str, description: str = "") -> str:
     return ""
 
 
-def get_team_by_id(team_id: str) -> Optional[Dict[str, Any]]:
+def get_team_by_id(team_id: str) -> dict[str, Any] | None:
     """Legacy function - returns None since we don't use teams anymore."""
     return None

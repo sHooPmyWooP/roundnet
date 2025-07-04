@@ -1,9 +1,9 @@
 """Data processing utilities for the interactive roundnet app."""
 
+from datetime import datetime
+from typing import Any
+
 import pandas as pd
-import numpy as np
-from typing import Dict, Any, List, Tuple, Optional
-from datetime import datetime, timedelta
 
 # Note: This file has been updated to work with the new interactive data management system.
 # Functions now use data from manager.py instead of sample data generators.
@@ -65,7 +65,7 @@ def get_team_performance_trends(team_id: str, window_size: int = 5) -> pd.DataFr
     return df
 
 
-def filter_games_by_date_range(start_date: datetime, end_date: datetime) -> List[Dict[str, Any]]:
+def filter_games_by_date_range(start_date: datetime, end_date: datetime) -> list[dict[str, Any]]:
     """Filter games by date range."""
     from roundnet.data.manager import get_games
 
@@ -83,7 +83,7 @@ def filter_games_by_date_range(start_date: datetime, end_date: datetime) -> List
     return filtered_games
 
 
-def get_head_to_head_record(team_a_id: str, team_b_id: str) -> Dict[str, Any]:
+def get_head_to_head_record(team_a_id: str, team_b_id: str) -> dict[str, Any]:
     """Get head-to-head record between two teams."""
     from roundnet.data.manager import get_games
 
@@ -125,7 +125,7 @@ def get_head_to_head_record(team_a_id: str, team_b_id: str) -> Dict[str, Any]:
     }
 
 
-def get_player_team_contribution(player_id: str) -> Dict[str, Any]:
+def get_player_team_contribution(player_id: str) -> dict[str, Any]:
     """Calculate a player's contribution to their team's performance."""
     from roundnet.data.manager import get_player_by_id, get_team_stats
 
@@ -160,9 +160,14 @@ def get_player_team_contribution(player_id: str) -> Dict[str, Any]:
     }
 
 
-def generate_summary_stats() -> Dict[str, Any]:
+def generate_summary_stats() -> dict[str, Any]:
     """Generate summary statistics for the dashboard."""
-    from roundnet.data.manager import get_games, get_players, get_teams, get_recent_games
+    from roundnet.data.manager import (
+        get_games,
+        get_players,
+        get_recent_games,
+        get_teams,
+    )
 
     games = get_games()
     players = get_players()
@@ -192,7 +197,7 @@ def generate_summary_stats() -> Dict[str, Any]:
             team_game_counts[team['name']] = count
 
         if team_game_counts:
-            most_active_team = max(team_game_counts, key=team_game_counts.get)
+            most_active_team = max(team_game_counts, key=lambda x: team_game_counts[x])
 
     return {
         "total_games": total_games,

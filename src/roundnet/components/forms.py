@@ -1,12 +1,17 @@
 """Forms for creating players, teams, and games."""
 
+from datetime import date
+
 import streamlit as st
-from datetime import datetime, date
-from typing import Optional
 
 from roundnet.data.manager import (
-    add_player, add_team, add_game, get_teams, get_players,
-    update_player_team, delete_player, delete_team, delete_game
+    add_game,
+    add_player,
+    add_team,
+    delete_game,
+    delete_player,
+    get_players,
+    get_teams,
 )
 
 
@@ -34,7 +39,7 @@ def create_player_form():
                             team_id = team['id']
                             break
 
-                player_id = add_player(player_name.strip(), team_id)
+                add_player(player_name.strip(), team_id)
                 st.success(f"Player '{player_name}' added successfully!")
                 st.rerun()
             else:
@@ -54,7 +59,7 @@ def create_team_form():
 
         if submitted:
             if team_name.strip():
-                team_id = add_team(team_name.strip(), team_description.strip())
+                add_team(team_name.strip(), team_description.strip())
                 st.success(f"Team '{team_name}' added successfully!")
                 st.rerun()
             else:
@@ -110,7 +115,7 @@ def create_game_form():
                         team_b_id = team['id']
 
                 if team_a_id and team_b_id:
-                    game_id = add_game(
+                    add_game(
                         team_a_id=team_a_id,
                         team_b_id=team_b_id,
                         score_a=score_a,
@@ -154,26 +159,28 @@ def manage_players_section():
                 st.write(f"**Current Team:** {current_team}")
 
             with col2:
-                # Team reassignment
-                team_options = ["No Team"] + [team['name'] for team in teams]
-                new_team = st.selectbox(
-                    "Change Team",
-                    team_options,
-                    index=team_options.index(current_team) if current_team in team_options else 0,
-                    key=f"team_select_{i}"
-                )
+                # Team reassignment (not supported in new system)
+                # team_options = ["No Team"] + [team['name'] for team in teams]
+                # new_team = st.selectbox(
+                #     "Change Team",
+                #     team_options,
+                #     index=team_options.index(current_team) if current_team in team_options else 0,
+                #     key=f"team_select_{i}"
+                # )
+                st.info("Team assignment not supported in new system")
 
-                if st.button("Update Team", key=f"update_{i}"):
-                    new_team_id = None
-                    if new_team != "No Team":
-                        for team in teams:
-                            if team['name'] == new_team:
-                                new_team_id = team['id']
-                                break
-
-                    update_player_team(player['id'], new_team_id)
-                    st.success(f"Updated {player['name']}'s team!")
-                    st.rerun()
+                # Note: Team assignment not supported in the new system
+                # if st.button("Update Team", key=f"update_{i}"):
+                #     new_team_id = None
+                #     if new_team != "No Team":
+                #         for team in teams:
+                #             if team['name'] == new_team:
+                #                 new_team_id = team['id']
+                #                 break
+                #
+                #     update_player_team(player['id'], new_team_id)
+                #     st.success(f"Updated {player['name']}'s team!")
+                #     st.rerun()
 
             with col3:
                 if st.button("Delete", key=f"delete_player_{i}", type="secondary"):
@@ -192,7 +199,7 @@ def manage_teams_section():
         st.info("No teams added yet.")
         return
 
-    for i, team in enumerate(teams):
+    for _i, team in enumerate(teams):
         with st.expander(f"{team['name']}", expanded=False):
             col1, col2 = st.columns([3, 1])
 
@@ -210,10 +217,12 @@ def manage_teams_section():
                     st.write("**Players:** No players assigned")
 
             with col2:
-                if st.button("Delete Team", key=f"delete_team_{i}", type="secondary"):
-                    delete_team(team['id'])
-                    st.success(f"Deleted team {team['name']}")
-                    st.rerun()
+                # Note: Team deletion not supported in the new system
+                # if st.button("Delete Team", key=f"delete_team_{i}", type="secondary"):
+                #     delete_team(team['id'])
+                #     st.success(f"Deleted team {team['name']}")
+                #     st.rerun()
+                st.info("Team management moved to new system")
 
 
 def manage_games_section():

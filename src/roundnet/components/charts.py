@@ -1,14 +1,13 @@
 """Chart components for data visualization."""
 
-import plotly.graph_objects as go
-import plotly.express as px
+from datetime import datetime
+
 import pandas as pd
-from typing import Dict, Any, Optional
-import numpy as np
-from datetime import datetime, timedelta
+import plotly.express as px
+import plotly.graph_objects as go
 
 from roundnet.config.settings import DEFAULT_CHART_HEIGHT
-from roundnet.data.manager import get_team_stats, get_games, get_teams
+from roundnet.data.manager import get_games, get_team_stats
 
 
 def create_games_over_time_chart() -> go.Figure:
@@ -22,7 +21,7 @@ def create_games_over_time_chart() -> go.Figure:
             text="No games recorded yet",
             xref="paper", yref="paper",
             x=0.5, y=0.5, showarrow=False,
-            font=dict(size=16)
+            font={"size": 16}
         )
         fig.update_layout(
             title="Games Over Time",
@@ -53,8 +52,8 @@ def create_games_over_time_chart() -> go.Figure:
         y=cumulative_games.values,
         mode="lines+markers",
         name="Total Games",
-        line=dict(color="#2E8B57", width=3),
-        marker=dict(size=6)
+        line={"color": "#2E8B57", "width": 3},
+        marker={"size": 6}
     ))
 
     fig.update_layout(
@@ -80,7 +79,7 @@ def create_win_rate_chart() -> go.Figure:
             text="No team data available",
             xref="paper", yref="paper",
             x=0.5, y=0.5, showarrow=False,
-            font=dict(size=16)
+            font={"size": 16}
         )
         fig.update_layout(
             title="Team Win Rates",
@@ -105,7 +104,7 @@ def create_win_rate_chart() -> go.Figure:
         xaxis_title="Team",
         yaxis_title="Win Rate",
         height=DEFAULT_CHART_HEIGHT,
-        yaxis=dict(tickformat=".0%")
+        yaxis={"tickformat": ".0%"}
     )
 
     return fig
@@ -122,7 +121,7 @@ def create_score_distribution_chart() -> go.Figure:
             text="No game data available",
             xref="paper", yref="paper",
             x=0.5, y=0.5, showarrow=False,
-            font=dict(size=16)
+            font={"size": 16}
         )
         fig.update_layout(
             title="Score Distribution",
@@ -170,7 +169,7 @@ def create_team_performance_chart() -> go.Figure:
             text="No team performance data available",
             xref="paper", yref="paper",
             x=0.5, y=0.5, showarrow=False,
-            font=dict(size=16)
+            font={"size": 16}
         )
         fig.update_layout(
             title="Team Performance Overview",
@@ -216,7 +215,7 @@ def create_team_performance_chart() -> go.Figure:
     return fig
 
 
-def create_player_performance_radar(player_stats: Dict[str, float]) -> go.Figure:
+def create_player_performance_radar(player_stats: dict[str, float]) -> go.Figure:
     """Create a radar chart for player performance."""
     categories = list(player_stats.keys())
     values = list(player_stats.values())
@@ -236,11 +235,11 @@ def create_player_performance_radar(player_stats: Dict[str, float]) -> go.Figure
     ))
 
     fig.update_layout(
-        polar=dict(
-            radialaxis=dict(
-                visible=True,
-                range=[0, 100]
-            )),
+        polar={
+            "radialaxis": {
+                "visible": True,
+                "range": [0, 100]
+            }},
         showlegend=False,
         title="Player Performance Radar",
         height=DEFAULT_CHART_HEIGHT

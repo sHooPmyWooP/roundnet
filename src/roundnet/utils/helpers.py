@@ -1,11 +1,13 @@
 """Helper utility functions."""
 
+import base64
+import hashlib
+import json
+from datetime import date, datetime
+from typing import Any
+
 import pandas as pd
 import streamlit as st
-from typing import Any, Dict, List, Optional, Union
-from datetime import datetime, date
-import json
-import hashlib
 
 
 def format_percentage(value: float, decimal_places: int = 1) -> str:
@@ -49,7 +51,7 @@ def create_download_link(df: pd.DataFrame, filename: str, link_text: str = "Down
     return href
 
 
-def display_dataframe_with_styling(df: pd.DataFrame, title: Optional[str] = None) -> None:
+def display_dataframe_with_styling(df: pd.DataFrame, title: str | None = None) -> None:
     """Display a DataFrame with nice styling."""
     if title:
         st.subheader(title)
@@ -64,7 +66,7 @@ def display_dataframe_with_styling(df: pd.DataFrame, title: Optional[str] = None
     st.dataframe(styled_df, use_container_width=True)
 
 
-def show_metrics_grid(metrics: Dict[str, Union[int, float, str]], cols: int = 4) -> None:
+def show_metrics_grid(metrics: dict[str, int | float | str], cols: int = 4) -> None:
     """Display metrics in a grid layout."""
     metric_items = list(metrics.items())
 
@@ -89,7 +91,7 @@ def show_metrics_grid(metrics: Dict[str, Union[int, float, str]], cols: int = 4)
 def filter_dataframe_by_multiselect(
     df: pd.DataFrame,
     column: str,
-    selected_values: List[str],
+    selected_values: list[str],
     all_option: str = "All"
 ) -> pd.DataFrame:
     """Filter DataFrame based on multiselect values."""
@@ -108,7 +110,7 @@ def calculate_trend_indicator(current: float, previous: float) -> str:
         return "➡️"
 
 
-def create_color_scale(values: List[float], colorscale: str = "RdYlGn") -> List[str]:
+def create_color_scale(values: list[float], colorscale: str = "RdYlGn") -> list[str]:
     """Create a color scale for a list of values."""
     import plotly.colors as pc
 
@@ -130,7 +132,7 @@ def create_color_scale(values: List[float], colorscale: str = "RdYlGn") -> List[
     return colors
 
 
-def log_user_action(action: str, details: Optional[Dict[str, Any]] = None) -> None:
+def log_user_action(action: str, details: dict[str, Any] | None = None) -> None:
     """Log user actions for analytics (in a real app, this would go to a logging service)."""
     timestamp = datetime.now().isoformat()
     log_entry = {
@@ -148,10 +150,7 @@ def log_user_action(action: str, details: Optional[Dict[str, Any]] = None) -> No
     st.session_state.user_actions.append(log_entry)
 
 
-def export_data_as_json(data: Dict[str, Any], filename: str) -> bytes:
+def export_data_as_json(data: dict[str, Any], filename: str) -> bytes:
     """Export data as JSON bytes for download."""
     json_str = json.dumps(data, indent=2, default=str)
     return json_str.encode()
-
-
-import base64  # Add this import at the top

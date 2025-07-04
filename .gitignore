@@ -2,7 +2,9 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+# Ignore everything in the data directory except README
+data/*
+!data/README
 # C extensions
 *.so
 

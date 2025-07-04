@@ -1,6 +1,7 @@
 # Roundnet Player Management System
 
-A Streamlit application for managing roundnet players, organizing playing days, and generating balanced teams.
+A Streamlit application for managing roundnet players, organizing playing days,
+and generating balanced teams.
 
 ## Features
 
@@ -15,7 +16,7 @@ A Streamlit application for managing roundnet players, organizing playing days, 
 
 1. **Random Assignment**: Completely random team pairing
 2. **Skill Balanced**: Pairs high-skill with low-skill players
-3. **Win Rate Balanced**: Pairs players based on historical win rates  
+3. **Win Rate Balanced**: Pairs players based on historical win rates
 4. **Partnership Balanced**: Minimizes frequent partnerships
 
 ### 💾 Data Storage
@@ -28,7 +29,7 @@ A Streamlit application for managing roundnet players, organizing playing days, 
 ```
 src/roundnet/
 ├── main.py                 # Main Streamlit application
-├── components/             
+├── components/
 │   ├── new_forms.py        # Forms for players, playing days, games
 │   └── sidebar.py          # Navigation sidebar
 ├── data/
@@ -113,7 +114,8 @@ This refactor removes the concept of static teams in favor of:
 - **Algorithm-based team balancing** for fair games
 - **File-based persistence** instead of session storage
 
-The new system is more flexible and realistic for casual roundnet groups where teams change frequently.
+The new system is more flexible and realistic for casual roundnet groups where
+teams change frequently.
 
 ## Data Models
 
@@ -122,7 +124,7 @@ The new system is more flexible and realistic for casual roundnet groups where t
 - Total games played and wins
 - Calculated win rate
 
-### Playing Day  
+### Playing Day
 - Date, location, description
 - Assigned players
 - Generated teams

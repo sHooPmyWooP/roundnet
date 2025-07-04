@@ -1,14 +1,23 @@
 """New forms for creating players, playing days, and managing teams."""
 
+from datetime import date
+
 import streamlit as st
-from datetime import datetime, date
-from typing import List
 
 from roundnet.data.manager import (
-    add_player, add_playing_day, add_game, get_players, get_playing_days,
-    assign_players_to_playing_day, generate_teams_for_playing_day,
-    delete_player, delete_playing_day, delete_game, update_player_skill,
-    get_games_for_playing_day, get_player_by_id, get_playing_day_by_id
+    add_game,
+    add_player,
+    add_playing_day,
+    assign_players_to_playing_day,
+    delete_player,
+    delete_playing_day,
+    generate_teams_for_playing_day,
+    get_games_for_playing_day,
+    get_player_by_id,
+    get_players,
+    get_playing_day_by_id,
+    get_playing_days,
+    update_player_skill,
 )
 
 
@@ -18,14 +27,14 @@ def create_player_form():
 
     with st.form("add_player_form"):
         player_name = st.text_input("Player Name", placeholder="Enter player name...")
-        skill_level = st.slider("Skill Level (1-10)", min_value=1, max_value=10, value=5, 
+        skill_level = st.slider("Skill Level (1-10)", min_value=1, max_value=10, value=5,
                                help="1 = Beginner, 10 = Expert")
 
         submitted = st.form_submit_button("Add Player")
 
         if submitted:
             if player_name.strip():
-                player_id = add_player(player_name.strip(), skill_level)
+                add_player(player_name.strip(), skill_level)
                 st.success(f"Player '{player_name}' added successfully with skill level {skill_level}!")
                 st.rerun()
             else:
@@ -39,13 +48,13 @@ def create_playing_day_form():
     with st.form("add_playing_day_form"):
         play_date = st.date_input("Playing Date", value=date.today())
         location = st.text_input("Location", placeholder="e.g., Central Park, Gym A...")
-        description = st.text_area("Description (optional)", 
+        description = st.text_area("Description (optional)",
                                  placeholder="Any additional notes about this playing session...")
 
         submitted = st.form_submit_button("Create Playing Day")
 
         if submitted:
-            playing_day_id = add_playing_day(play_date, location.strip(), description.strip())
+            add_playing_day(play_date, location.strip(), description.strip())
             st.success(f"Playing day created successfully for {play_date}!")
             st.rerun()
 
@@ -67,19 +76,19 @@ def manage_playing_day_players():
 
     # Select playing day
     playing_day_options = {
-        f"{pd['date']} - {pd['location']}" if pd['location'] else pd['date']: pd['id'] 
+        f"{pd['date']} - {pd['location']}" if pd['location'] else pd['date']: pd['id']
         for pd in playing_days
     }
-    
+
     selected_playing_day_display = st.selectbox(
-        "Select Playing Day", 
+        "Select Playing Day",
         list(playing_day_options.keys())
     )
-    
+
     if selected_playing_day_display:
         playing_day_id = playing_day_options[selected_playing_day_display]
         playing_day = get_playing_day_by_id(playing_day_id)
-        
+
         if playing_day:
             # Show current assigned players
             assigned_player_ids = playing_day['player_ids']
@@ -95,10 +104,10 @@ def manage_playing_day_players():
             # Multi-select for player assignment
             player_options = {player['name']: player['id'] for player in players}
             selected_players = st.multiselect(
-                "Assign Players", 
+                "Assign Players",
                 list(player_options.keys()),
                 default=[
-                    player['name'] for player in players 
+                    player['name'] for player in players
                     if player['id'] in assigned_player_ids
                 ]
             )
@@ -122,27 +131,27 @@ def generate_teams_interface():
 
     # Select playing day
     playing_day_options = {
-        f"{pd['date']} - {pd['location']}" if pd['location'] else pd['date']: pd['id'] 
+        f"{pd['date']} - {pd['location']}" if pd['location'] else pd['date']: pd['id']
         for pd in playing_days
     }
-    
+
     selected_playing_day_display = st.selectbox(
-        "Select Playing Day", 
+        "Select Playing Day",
         list(playing_day_options.keys()),
         key="team_gen_playing_day"
     )
-    
+
     if selected_playing_day_display:
         playing_day_id = playing_day_options[selected_playing_day_display]
         playing_day = get_playing_day_by_id(playing_day_id)
-        
+
         if playing_day:
             assigned_player_ids = playing_day['player_ids']
-            
+
             if len(assigned_player_ids) < 2:
                 st.warning("Need at least 2 players assigned to generate teams.")
                 return
-            
+
             if len(assigned_player_ids) % 2 != 0:
                 st.warning("Need an even number of players to generate teams.")
                 return
@@ -161,7 +170,7 @@ def generate_teams_interface():
                 format_func=lambda x: {
                     "random": "Random Assignment",
                     "skill_balanced": "Skill Level Balanced",
-                    "win_rate_balanced": "Win Rate Balanced", 
+                    "win_rate_balanced": "Win Rate Balanced",
                     "partnership_balanced": "Minimize Frequent Partnerships"
                 }[x]
             )
@@ -172,15 +181,15 @@ def generate_teams_interface():
                 "win_rate_balanced": "Pairs players with high win rates with those with low win rates.",
                 "partnership_balanced": "Tries to pair players who haven't played together often."
             }
-            
+
             st.info(f"**{algorithm_descriptions[algorithm]}**")
 
             col1, col2 = st.columns(2)
-            
+
             with col1:
                 if st.button("Generate Teams", type="primary"):
                     try:
-                        teams = generate_teams_for_playing_day(playing_day_id, algorithm)
+                        generate_teams_for_playing_day(playing_day_id, algorithm)
                         st.success("Teams generated successfully!")
                         st.rerun()
                     except ValueError as e:
@@ -195,19 +204,19 @@ def generate_teams_interface():
                         player = get_player_by_id(player_id)
                         if player:
                             st.write(f"  - {player['name']} (Skill: {player['skill_level']})")
-                
+
                 # Show team balance info
                 with st.expander("Team Balance Analysis"):
                     from roundnet.data.file_manager import FileDataManager
                     from roundnet.data.team_generator import TeamGenerator
-                    
+
                     dm = FileDataManager()
                     players_objs = dm.get_players()
                     partnerships = dm.get_partnerships()
                     generator = TeamGenerator(players_objs, partnerships)
-                    
+
                     balance_metrics = generator.calculate_team_balance_score(playing_day['generated_teams'])
-                    
+
                     col1, col2, col3 = st.columns(3)
                     with col1:
                         st.metric("Skill Variance", f"{balance_metrics['skill_variance']:.2f}")
@@ -215,7 +224,7 @@ def generate_teams_interface():
                         st.metric("Win Rate Variance", f"{balance_metrics['win_rate_variance']:.4f}")
                     with col3:
                         st.metric("Partnership Variance", f"{balance_metrics['partnership_variance']:.2f}")
-                    
+
                     st.caption("Lower variance indicates more balanced teams")
 
 
@@ -231,20 +240,20 @@ def create_game_form():
 
     # Select playing day
     playing_day_options = {
-        f"{pd['date']} - {pd['location']}" if pd['location'] else pd['date']: pd['id'] 
+        f"{pd['date']} - {pd['location']}" if pd['location'] else pd['date']: pd['id']
         for pd in playing_days
     }
-    
+
     selected_playing_day_display = st.selectbox(
-        "Select Playing Day", 
+        "Select Playing Day",
         list(playing_day_options.keys()),
         key="game_playing_day"
     )
-    
+
     if selected_playing_day_display:
         playing_day_id = playing_day_options[selected_playing_day_display]
         playing_day = get_playing_day_by_id(playing_day_id)
-        
+
         if playing_day and playing_day['generated_teams']:
             with st.form("add_game_form"):
                 # Select teams from generated teams
@@ -274,7 +283,7 @@ def create_game_form():
 
                 # Game result
                 result = st.radio(
-                    "Game Result", 
+                    "Game Result",
                     ["Team A Wins", "Team B Wins", "Tie"],
                     horizontal=True
                 )
@@ -299,11 +308,11 @@ def create_game_form():
                     team_b_wins = result == "Team B Wins"
                     is_tie = result == "Tie"
 
-                    game_id = add_game(
+                    add_game(
                         playing_day_id, team_a_players, team_b_players,
                         team_a_wins, team_b_wins, is_tie, duration, notes
                     )
-                    
+
                     st.success("Game recorded successfully!")
                     st.rerun()
 
@@ -325,25 +334,25 @@ def manage_players_section():
     for player in players:
         with st.expander(f"{player['name']} (Skill: {player['skill_level']}, Win Rate: {player['win_rate']:.1%})"):
             col1, col2, col3 = st.columns([2, 1, 1])
-            
+
             with col1:
                 new_skill = st.slider(
-                    "Skill Level", 
-                    min_value=1, 
-                    max_value=10, 
+                    "Skill Level",
+                    min_value=1,
+                    max_value=10,
                     value=player['skill_level'],
                     key=f"skill_{player['id']}"
                 )
-                
+
                 if st.button("Update Skill", key=f"update_{player['id']}"):
                     update_player_skill(player['id'], new_skill)
                     st.success("Skill level updated!")
                     st.rerun()
-            
+
             with col2:
                 st.metric("Games Played", player['total_games'])
                 st.metric("Wins", player['total_wins'])
-            
+
             with col3:
                 if st.button("Delete Player", key=f"delete_{player['id']}", type="secondary"):
                     delete_player(player['id'])
@@ -364,21 +373,21 @@ def manage_playing_days_section():
     for playing_day in sorted(playing_days, key=lambda x: x['date'], reverse=True):
         date_str = playing_day['date'] if isinstance(playing_day['date'], str) else playing_day['date'].strftime('%Y-%m-%d')
         location_str = f" - {playing_day['location']}" if playing_day['location'] else ""
-        
+
         with st.expander(f"{date_str}{location_str} ({len(playing_day['player_ids'])} players)"):
             col1, col2 = st.columns([3, 1])
-            
+
             with col1:
                 if playing_day['description']:
                     st.write(f"**Description:** {playing_day['description']}")
-                
+
                 if playing_day['player_ids']:
                     st.write("**Assigned Players:**")
                     for player_id in playing_day['player_ids']:
                         player = get_player_by_id(player_id)
                         if player:
                             st.write(f"- {player['name']}")
-                
+
                 if playing_day['generated_teams']:
                     st.write("**Generated Teams:**")
                     for i, team in enumerate(playing_day['generated_teams'], 1):
@@ -388,7 +397,7 @@ def manage_playing_days_section():
                             if player:
                                 team_names.append(player['name'])
                         st.write(f"Team {i}: {', '.join(team_names)}")
-                
+
                 # Show games for this playing day
                 games = get_games_for_playing_day(playing_day['id'])
                 if games:
@@ -396,17 +405,17 @@ def manage_playing_days_section():
                     for game in games:
                         team_a_names = []
                         team_b_names = []
-                        
+
                         for player_id in game['team_a_player_ids']:
                             player = get_player_by_id(player_id)
                             if player:
                                 team_a_names.append(player['name'])
-                        
+
                         for player_id in game['team_b_player_ids']:
                             player = get_player_by_id(player_id)
                             if player:
                                 team_b_names.append(player['name'])
-                        
+
                         result = ""
                         if game['team_a_wins']:
                             result = f"**{' & '.join(team_a_names)}** beat {' & '.join(team_b_names)}"
@@ -414,9 +423,9 @@ def manage_playing_days_section():
                             result = f"**{' & '.join(team_b_names)}** beat {' & '.join(team_a_names)}"
                         else:
                             result = f"{' & '.join(team_a_names)} tied with {' & '.join(team_b_names)}"
-                        
+
                         st.write(f"- {result}")
-            
+
             with col2:
                 if st.button("Delete", key=f"delete_pd_{playing_day['id']}", type="secondary"):
                     delete_playing_day(playing_day['id'])

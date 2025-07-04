@@ -1,9 +1,10 @@
 """Pytest configuration and fixtures."""
 
-import pytest
+from datetime import date
+from typing import Any
+
 import pandas as pd
-from datetime import datetime, date
-from typing import Dict, Any
+import pytest
 
 
 @pytest.fixture
@@ -38,7 +39,7 @@ def sample_player_data() -> pd.DataFrame:
 
 
 @pytest.fixture
-def mock_sidebar_data() -> Dict[str, Any]:
+def mock_sidebar_data() -> dict[str, Any]:
     """Fixture providing mock sidebar selection data."""
     return {
         "start_date": date(2024, 1, 1),

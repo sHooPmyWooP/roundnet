@@ -1,13 +1,14 @@
 """Sidebar components for the Streamlit app."""
 
+from datetime import date
+from typing import Any
+
 import streamlit as st
-from typing import Dict, Any, Optional
-from datetime import datetime, date
 
 from roundnet.data.manager import get_players, get_playing_days
 
 
-def render_sidebar() -> Dict[str, Any]:
+def render_sidebar() -> dict[str, Any]:
     """Render the sidebar and return selected options."""
     st.sidebar.header("Navigation")
 
@@ -22,10 +23,10 @@ def render_sidebar() -> Dict[str, Any]:
 
     # Quick stats section
     st.sidebar.header("Quick Stats")
-    
+
     players = get_players()
     playing_days = get_playing_days()
-    
+
     st.sidebar.metric("Total Players", len(players))
     st.sidebar.metric("Playing Days", len(playing_days))
 

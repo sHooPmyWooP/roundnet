@@ -1,9 +1,8 @@
 """Data utilities for the interactive roundnet app."""
 
+
 import pandas as pd
 import streamlit as st
-from typing import Dict, Any, List
-from datetime import datetime
 
 # Note: This file previously contained file upload and API functionality.
 # The app now uses interactive forms and in-memory storage via manager.py
@@ -11,8 +10,9 @@ from datetime import datetime
 
 def create_sample_teams_and_games():
     """Create some sample data for demonstration purposes."""
-    from roundnet.data.manager import add_team, add_player, add_game
     from datetime import date, timedelta
+
+    from roundnet.data.manager import add_game, add_player, add_team
 
     if st.session_state.get('sample_data_created'):
         return
@@ -26,7 +26,6 @@ def create_sample_teams_and_games():
         team_ids.append(team_id)
 
     # Create sample players
-    players_per_team = 2
     player_names = [
         ["Alice", "Bob"],
         ["Charlie", "Diana"],
@@ -72,7 +71,7 @@ def create_sample_teams_and_games():
     st.session_state.sample_data_created = True
 
 
-def validate_data(df: pd.DataFrame, required_columns: List[str]) -> bool:
+def validate_data(df: pd.DataFrame, required_columns: list[str]) -> bool:
     """Validate that DataFrame has required columns."""
     missing_columns = set(required_columns) - set(df.columns)
     if missing_columns:

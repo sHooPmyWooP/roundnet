@@ -1,16 +1,16 @@
 """Tests for data loading functionality."""
 
-import pytest
+from unittest.mock import MagicMock, patch
+
 import pandas as pd
-from unittest.mock import patch, MagicMock
 import requests
 
 from roundnet.data.loader import (
-    load_sample_data,
+    fetch_api_data,
     load_player_data,
-    validate_data,
+    load_sample_data,
     save_data_to_csv,
-    fetch_api_data
+    validate_data,
 )
 
 

@@ -8,12 +8,12 @@ The roundnet application has been completely refactored from a team-based system
 
 ### 🏗️ Architecture Changes
 
-| **Before** | **After** |
-|------------|-----------|
+| **Before**                         | **After**                               |
+| ---------------------------------- | --------------------------------------- |
 | Static teams with assigned players | Dynamic team generation per playing day |
-| Session-based memory storage | File-based JSON persistence |
-| Score tracking (21-15, etc.) | Win/Loss/Tie tracking only |
-| Team-centric statistics | Player-centric statistics |
+| Session-based memory storage       | File-based JSON persistence             |
+| Score tracking (21-15, etc.)       | Win/Loss/Tie tracking only              |
+| Team-centric statistics            | Player-centric statistics               |
 
 ### 📊 Data Model Changes
 

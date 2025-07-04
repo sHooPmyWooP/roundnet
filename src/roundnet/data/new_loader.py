@@ -1,9 +1,13 @@
 """Data loader for creating sample data in the new system."""
 
 from datetime import date, timedelta
+
 from roundnet.data.manager import (
-    add_player, add_playing_day, assign_players_to_playing_day,
-    generate_teams_for_playing_day, add_game
+    add_game,
+    add_player,
+    add_playing_day,
+    assign_players_to_playing_day,
+    generate_teams_for_playing_day,
 )
 
 

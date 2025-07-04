@@ -1,9 +1,10 @@
 """Data models for the roundnet application."""
 
-from dataclasses import dataclass, field
-from datetime import datetime, date as Date
-from typing import List, Optional, Dict, Any
 import uuid
+from dataclasses import dataclass, field
+from datetime import date as Date
+from datetime import datetime
+from typing import Any
 
 
 @dataclass
@@ -21,7 +22,7 @@ class Player:
         """Calculate win rate."""
         return self.total_wins / self.total_games if self.total_games > 0 else 0.0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             'id': self.id,
@@ -33,7 +34,7 @@ class Player:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'Player':
+    def from_dict(cls, data: dict[str, Any]) -> 'Player':
         """Create from dictionary."""
         data = data.copy()
         if isinstance(data['created_at'], str):
@@ -48,12 +49,12 @@ class PlayingDay:
     date: Date = field(default_factory=lambda: Date.today())
     location: str = ""
     description: str = ""
-    player_ids: List[str] = field(default_factory=list)
-    generated_teams: List[List[str]] = field(default_factory=list)  # List of teams (each team is list of player IDs)
+    player_ids: list[str] = field(default_factory=list)
+    generated_teams: list[list[str]] = field(default_factory=list)  # List of teams (each team is list of player IDs)
     team_generation_algorithm: str = "random"  # "random", "skill_balanced", "partnership_balanced"
     created_at: datetime = field(default_factory=datetime.now)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             'id': self.id,
@@ -67,7 +68,7 @@ class PlayingDay:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'PlayingDay':
+    def from_dict(cls, data: dict[str, Any]) -> 'PlayingDay':
         """Create from dictionary."""
         data = data.copy()
         if isinstance(data['date'], str):
@@ -82,8 +83,8 @@ class Game:
     """Game model for tracking individual game results."""
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
     playing_day_id: str = ""
-    team_a_player_ids: List[str] = field(default_factory=list)
-    team_b_player_ids: List[str] = field(default_factory=list)
+    team_a_player_ids: list[str] = field(default_factory=list)
+    team_b_player_ids: list[str] = field(default_factory=list)
     team_a_wins: bool = False
     team_b_wins: bool = False
     is_tie: bool = False
@@ -91,7 +92,7 @@ class Game:
     notes: str = ""
     created_at: datetime = field(default_factory=datetime.now)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             'id': self.id,
@@ -107,7 +108,7 @@ class Game:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'Game':
+    def from_dict(cls, data: dict[str, Any]) -> 'Game':
         """Create from dictionary."""
         data = data.copy()
         if isinstance(data['created_at'], str):
@@ -128,7 +129,7 @@ class Partnership:
         """Calculate win rate when playing together."""
         return self.wins_together / self.times_together if self.times_together > 0 else 0.0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             'player_a_id': self.player_a_id,
@@ -138,6 +139,6 @@ class Partnership:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'Partnership':
+    def from_dict(cls, data: dict[str, Any]) -> 'Partnership':
         """Create from dictionary."""
         return cls(**data)

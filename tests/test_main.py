@@ -1,8 +1,8 @@
 """Tests for the main Streamlit application."""
 
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
-import streamlit as st
 
 # Note: Testing Streamlit apps requires special handling
 # These tests demonstrate the structure, but may need streamlit-testing for full functionality
@@ -20,7 +20,7 @@ def test_app_imports():
 def test_config_imports():
     """Test that configuration can be imported."""
     try:
-        from roundnet.config.settings import APP_TITLE, APP_DESCRIPTION
+        from roundnet.config.settings import APP_DESCRIPTION, APP_TITLE
         assert isinstance(APP_TITLE, str)
         assert isinstance(APP_DESCRIPTION, str)
         assert len(APP_TITLE) > 0
@@ -40,10 +40,10 @@ def test_main_function_structure(mock_markdown, mock_title, mock_config):
     with patch('roundnet.components.sidebar.render_sidebar') as mock_sidebar, \
          patch('roundnet.components.charts.create_sample_chart') as mock_chart, \
          patch('streamlit.columns') as mock_columns, \
-         patch('streamlit.header') as mock_header, \
-         patch('streamlit.plotly_chart') as mock_plotly, \
-         patch('streamlit.metric') as mock_metric, \
-         patch('streamlit.info') as mock_info:
+         patch('streamlit.header'), \
+         patch('streamlit.plotly_chart'), \
+         patch('streamlit.metric'), \
+         patch('streamlit.info'):
 
         # Setup mocks
         mock_sidebar.return_value = {}

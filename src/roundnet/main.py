@@ -1,29 +1,28 @@
 """Main Streamlit application for roundnet player and playing day management."""
 
-import streamlit as st
-import pandas as pd
-from typing import Optional
 
-from roundnet.components.sidebar import render_sidebar
+import streamlit as st
+
 from roundnet.components.new_forms import (
+    create_game_form,
     create_player_form,
     create_playing_day_form,
-    create_game_form,
+    generate_teams_interface,
     manage_players_section,
-    manage_playing_days_section,
     manage_playing_day_players,
-    generate_teams_interface
+    manage_playing_days_section,
 )
-from roundnet.config.settings import APP_TITLE, APP_DESCRIPTION
+from roundnet.components.sidebar import render_sidebar
+from roundnet.config.settings import APP_DESCRIPTION, APP_TITLE
 from roundnet.data.manager import (
-    initialize_session_state,
+    get_games_for_playing_day,
+    get_partnership_stats,
+    get_player_by_id,
+    get_player_stats,
     get_players,
     get_playing_days,
     get_recent_games,
-    get_player_stats,
-    get_partnership_stats,
-    get_games_for_playing_day,
-    get_player_by_id
+    initialize_session_state,
 )
 
 
@@ -72,18 +71,18 @@ def show_dashboard():
     # Player statistics section
     st.subheader("� Player Performance")
     player_stats = get_player_stats()
-    
+
     if not player_stats.empty:
         # Show top performers
         col1, col2 = st.columns(2)
-        
+
         with col1:
             st.write("**Top Players by Win Rate:**")
             top_players = player_stats.head(5)
             for _, player in top_players.iterrows():
                 if player['games_played'] > 0:
                     st.write(f"🏆 {player['player_name']}: {player['win_rate']:.1%} ({player['wins']}/{player['games_played']})")
-        
+
         with col2:
             st.write("**Most Active Players:**")
             most_active = player_stats.nlargest(5, 'games_played')
@@ -95,13 +94,13 @@ def show_dashboard():
     if not partnership_stats.empty:
         st.subheader("🤝 Partnership Statistics")
         col1, col2 = st.columns(2)
-        
+
         with col1:
             st.write("**Most Frequent Partnerships:**")
             top_partnerships = partnership_stats.head(5)
             for _, partnership in top_partnerships.iterrows():
                 st.write(f"👥 {partnership['player_a_name']} & {partnership['player_b_name']}: {partnership['times_together']} games")
-        
+
         with col2:
             st.write("**Best Partnerships by Win Rate:**")
             best_partnerships = partnership_stats[partnership_stats['times_together'] >= 2].nlargest(5, 'win_rate_together')
@@ -120,15 +119,15 @@ def show_dashboard():
                 date_str = str(date_str)
 
             # Get player names
-            
+
             team_a_names = []
             team_b_names = []
-            
+
             for player_id in game['team_a_player_ids']:
                 player = get_player_by_id(player_id)
                 if player:
                     team_a_names.append(player['name'])
-            
+
             for player_id in game['team_b_player_ids']:
                 player = get_player_by_id(player_id)
                 if player:
@@ -168,8 +167,8 @@ def show_manage_data():
     st.header("⚙️ Manage Data")
 
     tab1, tab2, tab3, tab4 = st.tabs([
-        "👥 Manage Players", 
-        "📅 Manage Playing Days", 
+        "👥 Manage Players",
+        "📅 Manage Playing Days",
         "🎯 Assign Players",
         "� Generate Teams"
     ])
@@ -182,7 +181,7 @@ def show_manage_data():
 
     with tab3:
         manage_playing_day_players()
-    
+
     with tab4:
         generate_teams_interface()
 
@@ -234,10 +233,10 @@ def show_statistics():
     # Playing day summary
     st.subheader("📅 Playing Day Summary")
     playing_days = get_playing_days()
-    
+
     if playing_days:
         summary_data = []
-        
+
         for pd in playing_days:
             games = get_games_for_playing_day(pd['id'])
             summary_data.append({
@@ -248,10 +247,10 @@ def show_statistics():
                 'games_played': len(games),
                 'algorithm_used': pd['team_generation_algorithm'] if pd['generated_teams'] else 'None'
             })
-        
+
         summary_df = pd.DataFrame(summary_data)
         summary_df = summary_df.sort_values('date', ascending=False)
-        
+
         st.dataframe(
             summary_df,
             use_container_width=True,

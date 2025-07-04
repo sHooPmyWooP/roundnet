@@ -1,17 +1,18 @@
 """Tests for utility helper functions."""
 
-import pytest
-import pandas as pd
 from datetime import date
 from unittest.mock import patch
 
+import pandas as pd
+import pytest
+
 from roundnet.utils.helpers import (
-    format_percentage,
+    calculate_trend_indicator,
+    filter_dataframe_by_multiselect,
     format_duration,
+    format_percentage,
     safe_divide,
     validate_date_range,
-    calculate_trend_indicator,
-    filter_dataframe_by_multiselect
 )
 
 
@@ -103,8 +104,9 @@ def test_create_color_scale_equal_values():
 @patch('streamlit.session_state', {})
 def test_log_user_action():
     """Test user action logging."""
-    from roundnet.utils.helpers import log_user_action
     import streamlit as st
+
+    from roundnet.utils.helpers import log_user_action
 
     log_user_action("test_action", {"detail": "test"})
 
