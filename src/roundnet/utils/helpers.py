@@ -43,7 +43,9 @@ def validate_date_range(start_date: date, end_date: date) -> bool:
     return start_date <= end_date
 
 
-def create_download_link(df: pd.DataFrame, filename: str, link_text: str = "Download CSV") -> str:
+def create_download_link(
+    df: pd.DataFrame, filename: str, link_text: str = "Download CSV"
+) -> str:
     """Create a download link for a DataFrame."""
     csv = df.to_csv(index=False)
     b64 = base64.b64encode(csv.encode()).decode()
@@ -57,11 +59,9 @@ def display_dataframe_with_styling(df: pd.DataFrame, title: str | None = None) -
         st.subheader(title)
 
     # Apply some basic styling
-    styled_df = df.style.format({
-        col: "{:.1%}" for col in df.columns if "rate" in col.lower()
-    }).format({
-        col: "{:.1f}" for col in df.columns if "avg" in col.lower()
-    })
+    styled_df = df.style.format(
+        {col: "{:.1%}" for col in df.columns if "rate" in col.lower()}
+    ).format({col: "{:.1f}" for col in df.columns if "avg" in col.lower()})
 
     st.dataframe(styled_df, use_container_width=True)
 
@@ -89,15 +89,12 @@ def show_metrics_grid(metrics: dict[str, int | float | str], cols: int = 4) -> N
 
 
 def filter_dataframe_by_multiselect(
-    df: pd.DataFrame,
-    column: str,
-    selected_values: list[str],
-    all_option: str = "All"
+    df: pd.DataFrame, column: str, selected_values: list[str], all_option: str = "All"
 ) -> pd.DataFrame:
     """Filter DataFrame based on multiselect values."""
     if all_option in selected_values or not selected_values:
         return df
-    return df[df[column].isin(selected_values)]
+    return df[df[column].isin(selected_values)]  # type: ignore
 
 
 def calculate_trend_indicator(current: float, previous: float) -> str:
@@ -132,7 +129,9 @@ def create_color_scale(values: list[float], colorscale: str = "RdYlGn") -> list[
             # Convert RGB string to hex if needed
             if color.startswith("rgb"):
                 # Parse rgb(r,g,b) or rgba(r,g,b,a) format
-                rgb_values = color.replace("rgb", "").replace("a", "").strip("()").split(",")
+                rgb_values = (
+                    color.replace("rgb", "").replace("a", "").strip("()").split(",")
+                )
                 r, g, b = [int(float(val.strip())) for val in rgb_values[:3]]
                 color = f"#{r:02x}{g:02x}{b:02x}"
         colors.append(color)
@@ -147,7 +146,7 @@ def log_user_action(action: str, details: dict[str, Any] | None = None) -> None:
         "timestamp": timestamp,
         "action": action,
         "details": details or {},
-        "session_id": st.session_state.get("session_id", "unknown")
+        "session_id": st.session_state.get("session_id", "unknown"),
     }
 
     # In a real application, you would send this to a logging service

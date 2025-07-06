@@ -22,5 +22,9 @@ API_TIMEOUT = 30
 DATABASE_URL: str | None = os.getenv("DATABASE_URL")
 
 # Feature flags
-ENABLE_REAL_TIME_UPDATES = os.getenv("ENABLE_REAL_TIME_UPDATES", "false").lower() == "true"
-ENABLE_ADVANCED_ANALYTICS = os.getenv("ENABLE_ADVANCED_ANALYTICS", "true").lower() == "true"
+ENABLE_REAL_TIME_UPDATES = (
+    os.getenv("ENABLE_REAL_TIME_UPDATES", "false").lower() == "true"
+)
+ENABLE_ADVANCED_ANALYTICS = (
+    os.getenv("ENABLE_ADVANCED_ANALYTICS", "true").lower() == "true"
+)

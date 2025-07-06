@@ -15,7 +15,7 @@ def render_sidebar() -> dict[str, Any]:
     page = st.sidebar.selectbox(
         "Go to",
         ["🏐 Quick Games", "📊 Dashboard", "👥 Manage Players", "📈 Statistics"],
-        key="navigation"
+        key="navigation",
     )
 
     st.sidebar.markdown("---")

@@ -13,9 +13,11 @@ class TeamGenerator:
         self.players = {p.id: p for p in players}
         self.partnerships = self._build_partnership_dict(partnerships)
 
-    def _build_partnership_dict(self, partnerships: list[Partnership]) -> dict[tuple[str, str], Partnership]:
+    def _build_partnership_dict(
+        self, partnerships: list[Partnership]
+    ) -> dict[tuple[str, str], Partnership]:
         """Build a dictionary for quick partnership lookup."""
-        partnership_dict = {}
+        partnership_dict: dict[tuple[str, str], Partnership] = {}
         for p in partnerships:
             # Store both directions for easy lookup
             key1 = (p.player_a_id, p.player_b_id)
@@ -31,129 +33,147 @@ class TeamGenerator:
             return self.partnerships[key].times_together
         return 0
 
-    def random_teams(self, player_ids: list[str]) -> list[list[str]]:
-        """Generate random teams (2 players per team)."""
-        if len(player_ids) % 2 != 0:
-            raise ValueError("Number of players must be even for team generation")
-
+    def random_teams(self, player_ids: list[str], num_teams: int) -> list[list[str]]:
+        """Generate random teams, distributing players as evenly as possible."""
+        if num_teams < 2:
+            raise ValueError("At least 2 teams required")
+        if len(player_ids) < num_teams:
+            raise ValueError("Not enough players for the number of teams")
         shuffled_players = player_ids.copy()
         random.shuffle(shuffled_players)
-
-        teams = []
-        for i in range(0, len(shuffled_players), 2):
-            teams.append([shuffled_players[i], shuffled_players[i + 1]])
-
+        teams: list[list[str]] = [[] for _ in range(num_teams)]
+        for idx, pid in enumerate(shuffled_players):
+            teams[idx % num_teams].append(pid)
         return teams
 
-    def partnership_balanced_teams(self, player_ids: list[str]) -> list[list[str]]:
-        """Generate teams trying to minimize players who have played together frequently."""
-        if len(player_ids) % 2 != 0:
-            raise ValueError("Number of players must be even for team generation")
-
+    def partnership_balanced_teams(
+        self, player_ids: list[str], num_teams: int
+    ) -> list[list[str]]:
+        """Generate teams trying to minimize players who have played together frequently, distributing extra players evenly."""
+        if num_teams < 2:
+            raise ValueError("At least 2 teams required")
+        if len(player_ids) < num_teams:
+            raise ValueError("Not enough players for the number of teams")
         available_players = player_ids.copy()
-        teams = []
-
-        # Try to pair players who have played together the least
-        while len(available_players) >= 2:
-            # Take first available player
-            player_a = available_players.pop(0)
-
-            # Find the player they've played with the least
-            min_partnership_count = float('inf')
-            best_partner = None
-
-            for player_b in available_players:
-                partnership_count = self.get_partnership_count(player_a, player_b)
-                if partnership_count < min_partnership_count:
-                    min_partnership_count = partnership_count
-                    best_partner = player_b
-
-            if best_partner:
-                available_players.remove(best_partner)
-                teams.append([player_a, best_partner])
-
+        teams: list[list[str]] = [[] for _ in range(num_teams)]
+        # Greedily assign pairs with least partnership, then fill remaining slots
+        while len(available_players) >= num_teams:
+            # For each team, pick the player with the least total partnership with current team
+            for t in range(num_teams):
+                if not available_players:
+                    break
+                if not teams[t]:
+                    # Start with a random player
+                    player = available_players.pop(0)
+                    teams[t].append(player)
+                else:
+                    # Find player with least partnership with current team
+                    min_partnership = float("inf")
+                    best_player = None
+                    for pid in available_players:
+                        partnership_sum = sum(
+                            self.get_partnership_count(pid, teammate)
+                            for teammate in teams[t]
+                        )
+                        if partnership_sum < min_partnership:
+                            min_partnership = partnership_sum
+                            best_player = pid
+                    if best_player:
+                        available_players.remove(best_player)
+                        teams[t].append(best_player)
+        # Distribute any remaining players
+        for idx, pid in enumerate(available_players):
+            teams[idx % num_teams].append(pid)
         return teams
 
-    def win_rate_balanced_teams(self, player_ids: list[str]) -> list[list[str]]:
-        """Generate teams balanced by win rate."""
-        if len(player_ids) % 2 != 0:
-            raise ValueError("Number of players must be even for team generation")
-
-        # Sort players by win rate (descending)
+    def win_rate_balanced_teams(
+        self, player_ids: list[str], num_teams: int
+    ) -> list[list[str]]:
+        """Generate teams balanced by win rate, distributing extra players evenly."""
+        if num_teams < 2:
+            raise ValueError("At least 2 teams required")
+        if len(player_ids) < num_teams:
+            raise ValueError("Not enough players for the number of teams")
         sorted_players = sorted(
-            player_ids,
-            key=lambda pid: self.players[pid].win_rate,
-            reverse=True
+            player_ids, key=lambda pid: self.players[pid].win_rate, reverse=True
         )
-
-        teams = []
-        # Pair highest win rate with lowest win rate
-        num_teams = len(sorted_players) // 2
-        for i in range(num_teams):
-            high_wr = sorted_players[i]
-            low_wr = sorted_players[-(i + 1)]
-            teams.append([high_wr, low_wr])
-
+        teams: list[list[str]] = [[] for _ in range(num_teams)]
+        # Distribute highest win rate to lowest win rate teams
+        for idx, pid in enumerate(sorted_players):
+            teams[idx % num_teams].append(pid)
         return teams
 
-    def generate_teams(self, player_ids: list[str], algorithm: str = "random") -> list[list[str]]:
-        """Generate teams using the specified algorithm."""
-        if len(player_ids) < 2:
-            raise ValueError("Need at least 2 players to generate teams")
-
-        if len(player_ids) % 2 != 0:
-            raise ValueError("Number of players must be even for team generation")
-
+    def generate_teams(
+        self, player_ids: list[str], algorithm: str = "random"
+    ) -> list[list[str]]:
+        """Generate teams using the specified algorithm and flexible team sizes."""
+        n = len(player_ids)
+        if n < 4:
+            raise ValueError("Need at least 4 players to generate teams")
+        # Determine number of teams
+        if n == 4:
+            num_teams = 2
+        elif 5 <= n <= 7:
+            num_teams = 2
+        elif n >= 8:
+            num_teams = 4
+        else:
+            num_teams = 2
         if algorithm == "random":
-            return self.random_teams(player_ids)
+            return self.random_teams(player_ids, num_teams)
         elif algorithm == "partnership_balanced":
-            return self.partnership_balanced_teams(player_ids)
+            return self.partnership_balanced_teams(player_ids, num_teams)
         elif algorithm == "win_rate_balanced":
-            return self.win_rate_balanced_teams(player_ids)
+            return self.win_rate_balanced_teams(player_ids, num_teams)
         else:
             raise ValueError(f"Unknown algorithm: {algorithm}")
 
     def calculate_team_balance_score(self, teams: list[list[str]]) -> dict[str, float]:
         """Calculate various balance metrics for the generated teams."""
         metrics = {
-            'win_rate_variance': 0.0,
-            'partnership_variance': 0.0,
-            'overall_score': 0.0
+            "win_rate_variance": 0.0,
+            "partnership_variance": 0.0,
+            "overall_score": 0.0,
         }
 
         if not teams:
             return metrics
 
         # Calculate win rate variance between teams
-        team_win_rates = []
+        team_win_rates: list[float] = []
         for team in teams:
             team_wr = sum(self.players[pid].win_rate for pid in team) / len(team)
             team_win_rates.append(team_wr)
 
         if len(team_win_rates) > 1:
             wr_mean = sum(team_win_rates) / len(team_win_rates)
-            metrics['win_rate_variance'] = sum((wr - wr_mean) ** 2 for wr in team_win_rates) / len(team_win_rates)
+            metrics["win_rate_variance"] = sum(
+                (wr - wr_mean) ** 2 for wr in team_win_rates
+            ) / len(team_win_rates)
 
         # Calculate partnership familiarity variance
-        team_partnership_counts = []
+        team_partnership_counts: list[int] = []
         for team in teams:
             if len(team) >= 2:
                 partnership_count = self.get_partnership_count(team[0], team[1])
                 team_partnership_counts.append(partnership_count)
 
         if len(team_partnership_counts) > 1:
-            partnership_mean = sum(team_partnership_counts) / len(team_partnership_counts)
-            metrics['partnership_variance'] = sum((count - partnership_mean) ** 2 for count in team_partnership_counts) / len(team_partnership_counts)
+            partnership_mean = sum(team_partnership_counts) / len(
+                team_partnership_counts
+            )
+            metrics["partnership_variance"] = sum(
+                (count - partnership_mean) ** 2 for count in team_partnership_counts
+            ) / len(team_partnership_counts)
 
         # Calculate overall score as a weighted average of the variances
         # Lower variance = better balance, so we invert the score
         win_rate_weight = 0.7
         partnership_weight = 0.3
 
-        overall_score = (
-            win_rate_weight * (1 / (1 + metrics['win_rate_variance'])) +
-            partnership_weight * (1 / (1 + metrics['partnership_variance']))
-        )
-        metrics['overall_score'] = overall_score
+        overall_score = win_rate_weight * (
+            1 / (1 + metrics["win_rate_variance"])
+        ) + partnership_weight * (1 / (1 + metrics["partnership_variance"]))
+        metrics["overall_score"] = overall_score
 
         return metrics

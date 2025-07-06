@@ -24,7 +24,7 @@ from roundnet.data.manager import (
 )
 
 
-def show_quick_games():
+def show_quick_games() -> None:
     """Display the quick game creation interface - the new main page."""
     st.header("🏐 Quick Game Setup")
 
@@ -40,8 +40,11 @@ def show_quick_games():
                 st.rerun()
 
         with col2:
-            if st.button("📚 Create Sample Data", help="Add sample players to get started"):
+            if st.button(
+                "📚 Create Sample Data", help="Add sample players to get started"
+            ):
                 from roundnet.data.loader import create_sample_data
+
                 create_sample_data()
                 st.success("Sample data created!")
                 st.rerun()
@@ -51,7 +54,7 @@ def show_quick_games():
     quick_game_interface()
 
 
-def show_dashboard():
+def show_dashboard() -> None:
     """Display the main dashboard."""
     st.header("📊 Dashboard")
 
@@ -68,15 +71,22 @@ def show_dashboard():
         col1, col2 = st.columns(2)
 
         with col1:
-            if st.button("📚 Create Sample Data", help="Add some sample players and games"):
+            if st.button(
+                "📚 Create Sample Data", help="Add some sample players and games"
+            ):
                 from roundnet.data.loader import create_sample_data
+
                 create_sample_data()
-                st.success("Sample data created! Refresh the page or navigate to see the changes.")
+                st.success(
+                    "Sample data created! Refresh the page or navigate to see the changes."
+                )
                 st.rerun()
 
         with col2:
             if st.button("➕ Start Fresh", help="Begin by adding your own players"):
-                st.info("💡 Use the sidebar to navigate to 'Add Data' to start adding players!")
+                st.info(
+                    "💡 Use the sidebar to navigate to 'Add Data' to start adding players!"
+                )
 
         return
 
@@ -86,6 +96,7 @@ def show_dashboard():
         st.metric("Total Players", len(players))
     with col2:
         from roundnet.data.manager import get_games
+
         all_games = get_games()
         st.metric("Total Games", len(all_games))
     with col3:
@@ -103,12 +114,14 @@ def show_dashboard():
             st.write("**Top Players by Win Rate:**")
             top_players = player_stats.head(5)
             for _, player in top_players.iterrows():
-                if player['games_played'] > 0:
-                    st.write(f"🏆 {player['player_name']}: {player['win_rate']:.1%} ({player['wins']}/{player['games_played']})")
+                if player["games_played"] > 0:
+                    st.write(
+                        f"🏆 {player['player_name']}: {player['win_rate']:.1%} ({player['wins']}/{player['games_played']})"
+                    )
 
         with col2:
             st.write("**Most Active Players:**")
-            most_active = player_stats.nlargest(5, 'games_played')
+            most_active = player_stats.nlargest(5, "games_played")
             for _, player in most_active.iterrows():
                 st.write(f"🎯 {player['player_name']}: {player['games_played']} games")
 
@@ -123,57 +136,69 @@ def show_dashboard():
             top_partnerships = partnership_stats.head(5)
             if len(top_partnerships) > 0:
                 for _, partnership in top_partnerships.iterrows():
-                    games_text = "game" if partnership['times_together'] == 1 else "games"
-                    st.write(f"👥 {partnership['player_a_name']} & {partnership['player_b_name']}: {partnership['times_together']} {games_text}")
+                    games_text = (
+                        "game" if partnership["times_together"] == 1 else "games"
+                    )
+                    st.write(
+                        f"👥 {partnership['player_a_name']} & {partnership['player_b_name']}: {partnership['times_together']} {games_text}"
+                    )
             else:
                 st.info("No partnership data available yet.")
 
         with col2:
             st.write("**Best Partnerships by Win Rate:**")
             # Show partnerships with at least 1 game together
-            best_partnerships = partnership_stats[partnership_stats['times_together'] >= 1].nlargest(5, 'win_rate_together')
+            best_partnerships = partnership_stats[
+                partnership_stats["times_together"] >= 1
+            ].nlargest(5, "win_rate_together")
             if len(best_partnerships) > 0:
                 for _, partnership in best_partnerships.iterrows():
-                    games_text = "game" if partnership['times_together'] == 1 else "games"
-                    st.write(f"🏅 {partnership['player_a_name']} & {partnership['player_b_name']}: {partnership['win_rate_together']:.1%} ({partnership['wins_together']}/{partnership['times_together']} {games_text})")
+                    games_text = (
+                        "game" if partnership["times_together"] == 1 else "games"
+                    )
+                    st.write(
+                        f"🏅 {partnership['player_a_name']} & {partnership['player_b_name']}: {partnership['win_rate_together']:.1%} ({partnership['wins_together']}/{partnership['times_together']} {games_text})"
+                    )
             else:
                 st.info("No partnership data available yet.")
     else:
         st.subheader("🤝 Partnership Statistics")
-        st.info("No partnerships recorded yet. Play some games to see partnership statistics!")
+        st.info(
+            "No partnerships recorded yet. Play some games to see partnership statistics!"
+        )
 
     # Recent activity
     st.subheader("🏐 Recent Activity")
 
     if recent_games:
         for game in recent_games[:5]:  # Show last 5 games
-            date_str = game['created_at']
+            date_str = game["created_at"]
             if isinstance(date_str, str):
                 try:
                     date_obj = datetime.fromisoformat(date_str)
-                    date_str = date_obj.strftime('%Y-%m-%d %H:%M')
-                except:
+                    date_str = date_obj.strftime("%Y-%m-%d %H:%M")
+                except (ValueError, TypeError):
                     date_str = str(date_str)
             else:
-                date_str = date_str.strftime('%Y-%m-%d %H:%M')
+                date_str = date_str.strftime("%Y-%m-%d %H:%M")
 
             # Get player names
-            team_a_names = []
-            team_b_names = []
+            team_a_names: list[str] = []
+            team_b_names: list[str] = []
 
-            for player_id in game['team_a_player_ids']:
+            for player_id in game["team_a_player_ids"]:
                 player = get_player_by_id(player_id)
                 if player:
-                    team_a_names.append(player['name'])
+                    team_a_names.append(player["name"])
 
-            for player_id in game['team_b_player_ids']:
+            for player_id in game["team_b_player_ids"]:
                 player = get_player_by_id(player_id)
                 if player:
-                    team_b_names.append(player['name'])
+                    team_b_names.append(player["name"])
 
-            if game['team_a_wins']:
+            if game["team_a_wins"]:
                 result_text = f"🏆 **{' & '.join(team_a_names)}** defeated {' & '.join(team_b_names)}"
-            elif game['team_b_wins']:
+            elif game["team_b_wins"]:
                 result_text = f"🏆 **{' & '.join(team_b_names)}** defeated {' & '.join(team_a_names)}"
             else:
                 result_text = f"🤝 **{' & '.join(team_a_names)}** tied with **{' & '.join(team_b_names)}**"
@@ -183,7 +208,7 @@ def show_dashboard():
         st.info("No recent games to display.")
 
 
-def show_add_data():
+def show_add_data() -> None:
     """Display forms for adding new data."""
     st.header("➕ Add New Data")
 
@@ -199,7 +224,7 @@ def show_add_data():
         create_game_form()
 
 
-def show_manage_players():
+def show_manage_players() -> None:
     """Display player management interface."""
     st.header("👥 Manage Players")
 
@@ -212,15 +237,13 @@ def show_manage_players():
         manage_players_section()
 
 
-def show_manage_data():
+def show_manage_data() -> None:
     """Display management interface for existing data."""
     st.header("⚙️ Manage Data")
 
-    tab1, tab2, tab3 = st.tabs([
-        "👥 Manage Players",
-        "🎯 Select Players",
-        "⚖️ Generate Teams"
-    ])
+    tab1, tab2, tab3 = st.tabs(
+        ["👥 Manage Players", "🎯 Select Players", "⚖️ Generate Teams"]
+    )
 
     with tab1:
         manage_players_section()
@@ -232,7 +255,7 @@ def show_manage_data():
         generate_teams_interface()
 
 
-def show_statistics():
+def show_statistics() -> None:
     """Display detailed statistics."""
     st.header("📊 Detailed Statistics")
 
@@ -245,14 +268,13 @@ def show_statistics():
             player_stats,
             use_container_width=True,
             column_config={
-                "win_rate": st.column_config.NumberColumn(
-                    "Win Rate",
-                    format="%.1%"
-                )
-            }
+                "win_rate": st.column_config.NumberColumn("Win Rate", format="%.1%")
+            },
         )
     else:
-        st.info("No player statistics available yet. Add some players and record games to see statistics.")
+        st.info(
+            "No player statistics available yet. Add some players and record games to see statistics."
+        )
 
     # Partnership statistics
     st.subheader("🤝 Partnership Statistics")
@@ -264,13 +286,14 @@ def show_statistics():
             use_container_width=True,
             column_config={
                 "win_rate_together": st.column_config.NumberColumn(
-                    "Win Rate Together",
-                    format="%.1%"
+                    "Win Rate Together", format="%.1%"
                 )
-            }
+            },
         )
     else:
-        st.info("No partnership statistics available yet. Record some games to see partnership data.")
+        st.info(
+            "No partnership statistics available yet. Record some games to see partnership data."
+        )
 
 
 def main() -> None:

@@ -35,7 +35,7 @@ class FileDataManager:
     def _save_json_file(self, file_path: Path, data: list[dict[str, Any]]) -> None:
         """Save data to JSON file."""
         try:
-            with open(file_path, 'w') as f:
+            with open(file_path, "w") as f:
                 json.dump(data, f, indent=2, default=str)
         except OSError:
             pass  # Silent fail for now, could add logging
@@ -84,7 +84,9 @@ class FileDataManager:
         return None
 
     # Team generation methods
-    def generate_teams(self, player_ids: list[str], algorithm: str = "random") -> list[list[str]]:
+    def generate_teams(
+        self, player_ids: list[str], algorithm: str = "random"
+    ) -> list[list[str]]:
         """Generate teams for the given players using the specified algorithm."""
         if len(player_ids) < 2:
             return []
@@ -102,9 +104,17 @@ class FileDataManager:
         data = self._load_json_file(self.games_file)
         return [Game.from_dict(item) for item in data]
 
-    def add_game(self, team_a_player_ids: list[str], team_b_player_ids: list[str],
-                 team_a_wins: bool = False, team_b_wins: bool = False, is_tie: bool = False,
-                 duration_minutes: int = 30, notes: str = "", algorithm_used: str = "random") -> Game:
+    def add_game(
+        self,
+        team_a_player_ids: list[str],
+        team_b_player_ids: list[str],
+        team_a_wins: bool = False,
+        team_b_wins: bool = False,
+        is_tie: bool = False,
+        duration_minutes: int = 30,
+        notes: str = "",
+        algorithm_used: str = "random",
+    ) -> Game:
         """Add a new game."""
         game = Game(
             team_a_player_ids=team_a_player_ids,
@@ -114,7 +124,7 @@ class FileDataManager:
             is_tie=is_tie,
             duration_minutes=duration_minutes,
             notes=notes,
-            algorithm_used=algorithm_used
+            algorithm_used=algorithm_used,
         )
 
         games = self.get_games()
@@ -149,8 +159,9 @@ class FileDataManager:
         """Get partnership between two players."""
         partnerships = self.get_partnerships()
         for p in partnerships:
-            if ((p.player_a_id == player_a_id and p.player_b_id == player_b_id) or
-                (p.player_a_id == player_b_id and p.player_b_id == player_a_id)):
+            if (p.player_a_id == player_a_id and p.player_b_id == player_b_id) or (
+                p.player_a_id == player_b_id and p.player_b_id == player_a_id
+            ):
                 return p
         return None
 
@@ -164,10 +175,7 @@ class FileDataManager:
             p1, p2 = sorted(game.team_a_player_ids[:2])
             partnership = self.get_partnership(p1, p2)
             if not partnership:
-                partnership = Partnership(
-                    player_a_id=p1,
-                    player_b_id=p2
-                )
+                partnership = Partnership(player_a_id=p1, player_b_id=p2)
                 partnerships.append(partnership)
 
             partnership.times_together += 1
@@ -180,10 +188,7 @@ class FileDataManager:
             p1, p2 = sorted(game.team_b_player_ids[:2])
             partnership = self.get_partnership(p1, p2)
             if not partnership:
-                partnership = Partnership(
-                    player_a_id=p1,
-                    player_b_id=p2
-                )
+                partnership = Partnership(player_a_id=p1, player_b_id=p2)
                 partnerships.append(partnership)
 
             partnership.times_together += 1
@@ -207,8 +212,9 @@ class FileDataManager:
                 player.total_games += 1
 
                 # Check if this player won
-                if ((player_id in game.team_a_player_ids and game.team_a_wins) or
-                    (player_id in game.team_b_player_ids and game.team_b_wins)):
+                if (player_id in game.team_a_player_ids and game.team_a_wins) or (
+                    player_id in game.team_b_player_ids and game.team_b_wins
+                ):
                     player.total_wins += 1
 
                 self.update_player(player)

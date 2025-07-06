@@ -9,7 +9,7 @@ from roundnet.data.manager import (
 )
 
 
-def create_sample_data():
+def create_sample_data() -> None:
     """Create sample players and games for demonstration."""
 
     # Create sample players
@@ -38,7 +38,7 @@ def create_sample_data():
     algorithms = ["random", "win_rate_balanced", "partnership_balanced"]
 
     # Generate multiple sets of games
-    for i in range(15):  # Create 15 games
+    for _ in range(15):  # Create 15 games
         # Select random subset of players (4-8 players)
         num_players = random.choice([4, 6, 8])
         selected_players = random.sample(player_ids, num_players)
@@ -65,5 +65,13 @@ def create_sample_data():
 
                     notes = f"Sample game using {algorithm} algorithm"
 
-                    add_game(team_a, team_b, team_a_wins, team_b_wins, is_tie,
-                            duration, notes, algorithm)
+                    add_game(
+                        team_a,
+                        team_b,
+                        team_a_wins,
+                        team_b_wins,
+                        is_tie,
+                        duration,
+                        notes,
+                        algorithm,
+                    )

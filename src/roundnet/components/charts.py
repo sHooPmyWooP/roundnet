@@ -19,24 +19,27 @@ def create_games_over_time_chart() -> go.Figure:
         fig = go.Figure()
         fig.add_annotation(
             text="No games recorded yet",
-            xref="paper", yref="paper",
-            x=0.5, y=0.5, showarrow=False,
-            font={"size": 16}
+            xref="paper",
+            yref="paper",
+            x=0.5,
+            y=0.5,
+            showarrow=False,
+            font={"size": 16},
         )
         fig.update_layout(
             title="Games Over Time",
             height=DEFAULT_CHART_HEIGHT,
             xaxis_title="Date",
-            yaxis_title="Number of Games"
+            yaxis_title="Number of Games",
         )
         return fig
 
     # Convert games to DataFrame for easier processing
     game_dates = []
     for game in games:
-        game_date = game['date']
+        game_date = game["date"]
         if isinstance(game_date, str):
-            game_date = datetime.strptime(game_date, '%Y-%m-%d').date()
+            game_date = datetime.strptime(game_date, "%Y-%m-%d").date()
         game_dates.append(game_date)
 
     # Count games by date
@@ -47,14 +50,16 @@ def create_games_over_time_chart() -> go.Figure:
 
     fig = go.Figure()
 
-    fig.add_trace(go.Scatter(
-        x=cumulative_games.index,
-        y=cumulative_games.values,
-        mode="lines+markers",
-        name="Total Games",
-        line={"color": "#2E8B57", "width": 3},
-        marker={"size": 6}
-    ))
+    fig.add_trace(
+        go.Scatter(
+            x=cumulative_games.index,
+            y=cumulative_games.values,
+            mode="lines+markers",
+            name="Total Games",
+            line={"color": "#2E8B57", "width": 3},
+            marker={"size": 6},
+        )
+    )
 
     fig.update_layout(
         title="Cumulative Games Over Time",
@@ -62,7 +67,7 @@ def create_games_over_time_chart() -> go.Figure:
         yaxis_title="Total Games",
         height=DEFAULT_CHART_HEIGHT,
         hovermode="x unified",
-        showlegend=True
+        showlegend=True,
     )
 
     return fig
@@ -78,34 +83,39 @@ def create_win_rate_chart() -> go.Figure:
         fig = go.Figure()
         fig.add_annotation(
             text="No team data available",
-            xref="paper", yref="paper",
-            x=0.5, y=0.5, showarrow=False,
-            font={"size": 16}
+            xref="paper",
+            yref="paper",
+            x=0.5,
+            y=0.5,
+            showarrow=False,
+            font={"size": 16},
         )
         fig.update_layout(
             title="Team Win Rates",
             height=DEFAULT_CHART_HEIGHT,
             xaxis_title="Team",
-            yaxis_title="Win Rate"
+            yaxis_title="Win Rate",
         )
         return fig
 
-    fig = go.Figure(data=[
-        go.Bar(
-            x=team_stats['team_name'],
-            y=team_stats['win_rate'],
-            marker_color=px.colors.qualitative.Set3,
-            text=[f"{rate:.1%}" for rate in team_stats['win_rate']],
-            textposition="auto"
-        )
-    ])
+    fig = go.Figure(
+        data=[
+            go.Bar(
+                x=team_stats["team_name"],
+                y=team_stats["win_rate"],
+                marker_color=px.colors.qualitative.Set3,
+                text=[f"{rate:.1%}" for rate in team_stats["win_rate"]],
+                textposition="auto",
+            )
+        ]
+    )
 
     fig.update_layout(
         title="Team Win Rates",
         xaxis_title="Team",
         yaxis_title="Win Rate",
         height=DEFAULT_CHART_HEIGHT,
-        yaxis={"tickformat": ".0%"}
+        yaxis={"tickformat": ".0%"},
     )
 
     return fig
@@ -120,40 +130,45 @@ def create_score_distribution_chart() -> go.Figure:
         fig = go.Figure()
         fig.add_annotation(
             text="No game data available",
-            xref="paper", yref="paper",
-            x=0.5, y=0.5, showarrow=False,
-            font={"size": 16}
+            xref="paper",
+            yref="paper",
+            x=0.5,
+            y=0.5,
+            showarrow=False,
+            font={"size": 16},
         )
         fig.update_layout(
             title="Score Distribution",
             height=DEFAULT_CHART_HEIGHT,
             xaxis_title="Score",
-            yaxis_title="Frequency"
+            yaxis_title="Frequency",
         )
         return fig
 
     # Collect all scores
     all_scores = []
     for game in games:
-        all_scores.extend([game['score_a'], game['score_b']])
+        all_scores.extend([game["score_a"], game["score_b"]])
 
     if not all_scores:
         return create_score_distribution_chart()  # Return empty chart
 
-    fig = go.Figure(data=[
-        go.Histogram(
-            x=all_scores,
-            nbinsx=max(10, len(set(all_scores))),
-            marker_color="#4CAF50",
-            opacity=0.7
-        )
-    ])
+    fig = go.Figure(
+        data=[
+            go.Histogram(
+                x=all_scores,
+                nbinsx=max(10, len(set(all_scores))),
+                marker_color="#4CAF50",
+                opacity=0.7,
+            )
+        ]
+    )
 
     fig.update_layout(
         title="Score Distribution",
         xaxis_title="Score",
         yaxis_title="Frequency",
-        height=DEFAULT_CHART_HEIGHT
+        height=DEFAULT_CHART_HEIGHT,
     )
 
     return fig
@@ -169,49 +184,57 @@ def create_team_performance_chart() -> go.Figure:
         fig = go.Figure()
         fig.add_annotation(
             text="No team performance data available",
-            xref="paper", yref="paper",
-            x=0.5, y=0.5, showarrow=False,
-            font={"size": 16}
+            xref="paper",
+            yref="paper",
+            x=0.5,
+            y=0.5,
+            showarrow=False,
+            font={"size": 16},
         )
         fig.update_layout(
-            title="Team Performance Overview",
-            height=DEFAULT_CHART_HEIGHT
+            title="Team Performance Overview", height=DEFAULT_CHART_HEIGHT
         )
         return fig
 
     fig = go.Figure()
 
     # Add wins
-    fig.add_trace(go.Bar(
-        name='Wins',
-        x=team_stats['team_name'],
-        y=team_stats['wins'],
-        marker_color='#2E8B57'
-    ))
+    fig.add_trace(
+        go.Bar(
+            name="Wins",
+            x=team_stats["team_name"],
+            y=team_stats["wins"],
+            marker_color="#2E8B57",
+        )
+    )
 
     # Add losses
-    fig.add_trace(go.Bar(
-        name='Losses',
-        x=team_stats['team_name'],
-        y=team_stats['losses'],
-        marker_color='#DC143C'
-    ))
+    fig.add_trace(
+        go.Bar(
+            name="Losses",
+            x=team_stats["team_name"],
+            y=team_stats["losses"],
+            marker_color="#DC143C",
+        )
+    )
 
     # Add draws if any
-    if 'draws' in team_stats.columns and team_stats['draws'].sum() > 0:
-        fig.add_trace(go.Bar(
-            name='Draws',
-            x=team_stats['team_name'],
-            y=team_stats['draws'],
-            marker_color='#FFD700'
-        ))
+    if "draws" in team_stats.columns and team_stats["draws"].sum() > 0:
+        fig.add_trace(
+            go.Bar(
+                name="Draws",
+                x=team_stats["team_name"],
+                y=team_stats["draws"],
+                marker_color="#FFD700",
+            )
+        )
 
     fig.update_layout(
-        title='Team Performance Overview',
-        xaxis_title='Team',
-        yaxis_title='Number of Games',
-        barmode='stack',
-        height=DEFAULT_CHART_HEIGHT
+        title="Team Performance Overview",
+        xaxis_title="Team",
+        yaxis_title="Number of Games",
+        barmode="stack",
+        height=DEFAULT_CHART_HEIGHT,
     )
 
     return fig
@@ -228,23 +251,21 @@ def create_player_performance_radar(player_stats: dict[str, float]) -> go.Figure
 
     fig = go.Figure()
 
-    fig.add_trace(go.Scatterpolar(
-        r=values,
-        theta=categories,
-        fill='toself',
-        name='Performance',
-        line_color='#FF6B6B'
-    ))
+    fig.add_trace(
+        go.Scatterpolar(
+            r=values,
+            theta=categories,
+            fill="toself",
+            name="Performance",
+            line_color="#FF6B6B",
+        )
+    )
 
     fig.update_layout(
-        polar={
-            "radialaxis": {
-                "visible": True,
-                "range": [0, 100]
-            }},
+        polar={"radialaxis": {"visible": True, "range": [0, 100]}},
         showlegend=False,
         title="Player Performance Radar",
-        height=DEFAULT_CHART_HEIGHT
+        height=DEFAULT_CHART_HEIGHT,
     )
 
     return fig
@@ -255,18 +276,20 @@ def create_sample_chart() -> go.Figure:
     fig = go.Figure()
 
     # Add a simple sample data trace
-    fig.add_trace(go.Scatter(
-        x=[1, 2, 3, 4, 5],
-        y=[2, 4, 3, 5, 1],
-        mode='lines+markers',
-        name='Sample Data'
-    ))
+    fig.add_trace(
+        go.Scatter(
+            x=[1, 2, 3, 4, 5],
+            y=[2, 4, 3, 5, 1],
+            mode="lines+markers",
+            name="Sample Data",
+        )
+    )
 
     fig.update_layout(
         title="Sample Chart",
         xaxis_title="X Axis",
         yaxis_title="Y Axis",
-        height=DEFAULT_CHART_HEIGHT
+        height=DEFAULT_CHART_HEIGHT,
     )
 
     return fig

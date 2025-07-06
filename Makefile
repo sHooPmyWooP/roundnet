@@ -40,7 +40,7 @@ test-cov:
 
 lint:
 	uv run ruff check src tests
-	uv run mypy src
+	uv run uv run ty check .
 
 format:
 	uv run black src tests
