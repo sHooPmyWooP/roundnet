@@ -1,10 +1,10 @@
 """Tests for team generator module."""
 
-import pytest
-from unittest.mock import Mock
 
+import pytest
+
+from roundnet.data.models import Partnership, Player
 from roundnet.data.team_generator import TeamGenerator
-from roundnet.data.models import Player, Partnership
 
 
 @pytest.fixture

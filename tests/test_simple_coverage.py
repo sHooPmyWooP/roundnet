@@ -1,8 +1,9 @@
 """Simple tests for coverage improvement."""
 
-import pytest
+from unittest.mock import patch
+
 import pandas as pd
-from unittest.mock import patch, MagicMock
+
 
 # Test charts with mock data that actually works
 class TestChartsSimple:

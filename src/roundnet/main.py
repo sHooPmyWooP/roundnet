@@ -2,7 +2,6 @@
 
 from datetime import datetime
 
-import pandas as pd
 import streamlit as st
 
 from roundnet.components.forms import (
@@ -219,7 +218,7 @@ def show_manage_data():
 
     tab1, tab2, tab3 = st.tabs([
         "👥 Manage Players",
-        "🎯 Select Players", 
+        "🎯 Select Players",
         "⚖️ Generate Teams"
     ])
 

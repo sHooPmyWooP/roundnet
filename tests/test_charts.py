@@ -1,17 +1,18 @@
 """Tests for charts module."""
 
+from unittest.mock import patch
+
 import pandas as pd
-import pytest
-from unittest.mock import patch, MagicMock
 import plotly.graph_objects as go
+import pytest
 
 from roundnet.components.charts import (
     create_games_over_time_chart,
-    create_win_rate_chart,
+    create_player_performance_radar,
+    create_sample_chart,
     create_score_distribution_chart,
     create_team_performance_chart,
-    create_player_performance_radar,
-    create_sample_chart
+    create_win_rate_chart,
 )
 
 

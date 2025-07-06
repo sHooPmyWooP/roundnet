@@ -1,11 +1,10 @@
 """Sidebar components for the Streamlit app."""
 
-from datetime import date
 from typing import Any
 
 import streamlit as st
 
-from roundnet.data.manager import get_players, get_games
+from roundnet.data.manager import get_games, get_players
 
 
 def render_sidebar() -> dict[str, Any]:

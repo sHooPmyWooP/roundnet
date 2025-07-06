@@ -1,7 +1,7 @@
 """File-based data manager for persistent storage."""
 
 import json
-from datetime import date, datetime
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -102,7 +102,7 @@ class FileDataManager:
         data = self._load_json_file(self.games_file)
         return [Game.from_dict(item) for item in data]
 
-    def add_game(self, team_a_player_ids: list[str], team_b_player_ids: list[str], 
+    def add_game(self, team_a_player_ids: list[str], team_b_player_ids: list[str],
                  team_a_wins: bool = False, team_b_wins: bool = False, is_tie: bool = False,
                  duration_minutes: int = 30, notes: str = "", algorithm_used: str = "random") -> Game:
         """Add a new game."""

@@ -1,17 +1,18 @@
 """Tests for data processor module - FIXED VERSION."""
 
-import pytest
-from datetime import date, datetime, timedelta
-from unittest.mock import patch, MagicMock
+from datetime import date
+from unittest.mock import patch
+
 import pandas as pd
+import pytest
 
 from roundnet.data.processor import (
     calculate_win_rate,
-    get_team_performance_trends,
     filter_games_by_date_range,
+    generate_summary_stats,
     get_head_to_head_record,
     get_player_team_contribution,
-    generate_summary_stats,
+    get_team_performance_trends,
 )
 
 

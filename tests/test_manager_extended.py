@@ -1,28 +1,29 @@
 """Additional tests for data manager module."""
 
-import pytest
-from datetime import date, datetime, timedelta
-from unittest.mock import patch, MagicMock
+from datetime import date, timedelta
+from unittest.mock import MagicMock, patch
+
 import pandas as pd
+import pytest
 
 from roundnet.data.manager import (
-    get_data_manager,
-    initialize_session_state,
-    add_player,
-    get_players,
-    get_players_objects,
-    get_player_by_id,
-    delete_player,
-    update_player_skill,
-    generate_teams_for_playing_day,
-    delete_playing_day,
     add_game,
+    add_player,
+    delete_game,
+    delete_player,
+    delete_playing_day,
+    generate_teams_for_playing_day,
+    get_data_manager,
     get_games,
     get_games_for_playing_day,
-    delete_game,
+    get_partnership_stats,
+    get_player_by_id,
     get_player_stats,
+    get_players,
+    get_players_objects,
     get_recent_games,
-    get_partnership_stats
+    initialize_session_state,
+    update_player_skill,
 )
 
 
@@ -332,7 +333,7 @@ class TestStatistics:
     @patch('roundnet.data.manager.get_data_manager')
     def test_get_recent_games(self, mock_get_dm):
         """Test getting recent games."""
-        from roundnet.data.models import PlayingDay, Game
+        from roundnet.data.models import Game, PlayingDay
 
         recent_date = date.today() - timedelta(days=3)
         mock_playing_day = PlayingDay(id="day1", date=recent_date, location="Park")

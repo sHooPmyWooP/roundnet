@@ -1,13 +1,10 @@
 """Data loader for creating sample data in the roundnet system."""
 
-import random
 from datetime import date, timedelta
 
 from roundnet.data.manager import (
     add_game,
     add_player,
-    generate_teams,
-    get_players,
 )
 
 

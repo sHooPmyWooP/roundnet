@@ -12,30 +12,30 @@ from roundnet.data.manager import (
 def create_sample_data():
     """Create sample players and games for demonstration."""
 
-    # Create sample players
+    # Create sample players with different skill levels
     players = [
-        "Alice Johnson",
-        "Bob Smith",
-        "Charlie Brown",
-        "Diana Prince",
-        "Eve Adams",
-        "Frank Miller",
-        "Grace Lee",
-        "Henry Ford",
-        "Ivy Chen",
-        "Jack Wilson",
-        "Kelly Martin",
-        "Liam Davis",
+        ("Alice Johnson", 8),
+        ("Bob Smith", 6),
+        ("Charlie Brown", 7),
+        ("Diana Prince", 9),
+        ("Eve Adams", 5),
+        ("Frank Miller", 8),
+        ("Grace Lee", 6),
+        ("Henry Ford", 7),
+        ("Ivy Chen", 9),
+        ("Jack Wilson", 5),
+        ("Kelly Martin", 7),
+        ("Liam Davis", 6),
     ]
 
     # Add all players
     player_ids = []
-    for name in players:
-        player_id = add_player(name)
+    for name, skill in players:
+        player_id = add_player(name, skill)
         player_ids.append(player_id)
 
     # Create sample games with different team combinations
-    algorithms = ["random", "win_rate_balanced", "partnership_balanced"]
+    algorithms = ["random", "skill_balanced", "win_rate_balanced", "partnership_balanced"]
 
     # Generate multiple sets of games
     for i in range(15):  # Create 15 games

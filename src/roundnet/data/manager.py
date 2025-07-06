@@ -1,6 +1,5 @@
 """Data management for the roundnet application using file-based persistence."""
 
-from datetime import date
 from typing import Any
 
 import pandas as pd

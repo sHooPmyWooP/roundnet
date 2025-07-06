@@ -10,6 +10,7 @@ from roundnet.data.manager import (
     generate_teams,
     get_player_by_id,
     get_players,
+    update_player_skill,
 )
 
 
@@ -19,12 +20,14 @@ def create_player_form():
 
     with st.form("add_player_form"):
         name = st.text_input("Player Name", placeholder="Enter player name...")
+        skill_level = st.slider("Skill Level", min_value=1, max_value=10, value=5,
+                               help="Rate the player's skill from 1 (beginner) to 10 (expert)")
 
         submitted = st.form_submit_button("Add Player")
 
         if submitted:
             if name.strip():
-                add_player(name.strip())
+                add_player(name.strip(), skill_level)
                 st.success(f"Player '{name}' added successfully!")
                 st.rerun()
             else:
@@ -44,67 +47,31 @@ def manage_current_players():
     # Initialize current players in session state if not exists
     if 'current_player_ids' not in st.session_state:
         st.session_state.current_player_ids = []
-    if 'show_player_selector' not in st.session_state:
-        st.session_state.show_player_selector = True
 
     # Show currently selected players
     current_players = [p for p in players if p['id'] in st.session_state.current_player_ids]
     if current_players:
         st.write("**Currently Selected Players:**")
-
-        # Display current players in a more organized way
-        cols = st.columns(min(len(current_players), 3))
-        for i, player in enumerate(current_players):
-            with cols[i % 3]:
-                st.info(f"👤 {player['name']}")
-
-        # Add a prominent button to change/update player selection
-        col1, col2 = st.columns([1, 1])
-        with col1:
-            if st.button("🔄 Change Player Selection", type="secondary"):
-                # Show the selection interface below
-                st.session_state.show_player_selector = True
-        with col2:
-            if st.button("✅ Keep Current Players", type="primary"):
-                st.success("Current player selection confirmed!")
-                st.session_state.show_player_selector = False
-                return
+        for player in current_players:
+            st.write(f"- {player['name']} (Skill: {player['skill_level']})")
     else:
         st.info("No players selected yet.")
-        st.session_state.show_player_selector = True
 
-    # Show player selection interface when needed
-    if current_players and not st.session_state.get('show_player_selector', False):
-        return  # Don't show selector if players are already chosen and user hasn't clicked to change
-
-    # Multi-select for player selection (only show when needed)
-    st.write("**Select Players:**")
+    # Multi-select for player selection
     player_options = {player['name']: player['id'] for player in players}
     selected_players = st.multiselect(
-        "Choose active players for this session",
+        "Select Active Players",
         list(player_options.keys()),
         default=[
             player['name'] for player in players
             if player['id'] in st.session_state.current_player_ids
-        ],
-        help="Select all players who will be playing in this session"
+        ]
     )
 
-    col1, col2 = st.columns([1, 1])
-    with col1:
-        if st.button("🎯 Update Player Selection", type="primary"):
-            st.session_state.current_player_ids = [player_options[name] for name in selected_players]
-            st.session_state.show_player_selector = False
-            # Clear generated teams when players change
-            if 'generated_teams' in st.session_state:
-                st.session_state.generated_teams = []
-            st.success("Player selection updated!")
-            st.rerun()
-
-    with col2:
-        if current_players and st.button("❌ Cancel Changes", type="secondary"):
-            st.session_state.show_player_selector = False
-            st.rerun()
+    if st.button("Update Player Selection"):
+        st.session_state.current_player_ids = [player_options[name] for name in selected_players]
+        st.success("Player selection updated!")
+        st.rerun()
 
 
 def generate_teams_interface():
@@ -136,14 +103,15 @@ def generate_teams_interface():
     for player_id in current_player_ids:
         player = get_player_by_id(player_id)
         if player:
-            st.write(f"- {player['name']}")
+            st.write(f"- {player['name']} (Skill: {player['skill_level']})")
 
     # Algorithm selection
     algorithm = st.selectbox(
         "Team Generation Algorithm",
-        ["random", "win_rate_balanced", "partnership_balanced"],
+        ["random", "skill_balanced", "win_rate_balanced", "partnership_balanced"],
         format_func=lambda x: {
             "random": "Random",
+            "skill_balanced": "Skill Balanced",
             "win_rate_balanced": "Win Rate Balanced",
             "partnership_balanced": "Partnership Balanced"
         }[x],
@@ -169,7 +137,7 @@ def generate_teams_interface():
             for player_id in team:
                 player = get_player_by_id(player_id)
                 if player:
-                    team_players.append(player['name'])
+                    team_players.append(f"{player['name']} (S:{player['skill_level']})")
 
             team_name = f"Team {i}"
             team_names.append(team_name)
@@ -237,13 +205,13 @@ def generate_teams_interface():
 
             balance_metrics = generator.calculate_team_balance_score(teams)
 
-            col1, col2 = st.columns(2)
+            col1, col2, col3 = st.columns(3)
             with col1:
-                st.metric("Win Rate Variance", f"{balance_metrics['win_rate_variance']:.4f}",
-                         help="Lower values indicate better experience balance")
+                st.metric("Skill Balance", f"{balance_metrics['skill_balance']:.2f}")
             with col2:
-                st.metric("Overall Score", f"{balance_metrics['overall_score']:.2f}",
-                         help="Higher values indicate better overall balance")
+                st.metric("Experience Balance", f"{balance_metrics['experience_balance']:.2f}")
+            with col3:
+                st.metric("Overall Score", f"{balance_metrics['overall_score']:.2f}")
 
 
 def create_game_form():
@@ -319,13 +287,28 @@ def manage_players_section():
         return
 
     for player in sorted(players, key=lambda x: x['name']):
-        with st.expander(f"{player['name']}"):
+        with st.expander(f"{player['name']} (Skill: {player['skill_level']})"):
             col1, col2 = st.columns([3, 1])
 
             with col1:
                 st.write(f"**Games Played:** {player['total_games']}")
                 st.write(f"**Wins:** {player['total_wins']}")
                 st.write(f"**Win Rate:** {player['win_rate']:.1%}")
+
+                # Update skill level
+                new_skill = st.slider(
+                    "Update Skill Level",
+                    min_value=1,
+                    max_value=10,
+                    value=player['skill_level'],
+                    key=f"skill_{player['id']}"
+                )
+
+                if new_skill != player['skill_level']:
+                    if st.button("Update Skill", key=f"update_{player['id']}"):
+                        update_player_skill(player['id'], new_skill)
+                        st.success("Skill level updated!")
+                        st.rerun()
 
             with col2:
                 if st.button("Delete", key=f"delete_{player['id']}", type="secondary"):
