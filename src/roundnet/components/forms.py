@@ -166,16 +166,31 @@ def generate_teams_interface() -> None:
         teams = st.session_state.generated_teams
         team_names = []
 
-        for i, team in enumerate(teams, 1):
+        def mashup_names(names):
+            # For two players: combine first half of first name and second half of second name, removing spaces
+            if len(names) == 2:
+                n1, n2 = names
+                n1 = n1.replace(" ", "")
+                n2 = n2.replace(" ", "")
+                n1_half = len(n1) // 2
+                n2_half = len(n2) - len(n2) // 2
+                return n1[:n1_half] + n2[-n2_half:]
+            # For more than two: use initials or a short mashup
+            elif len(names) > 2:
+                return "".join([n[0] for n in names if n])
+            else:
+                return names[0].replace(" ", "") if names else "UnknownTeam"
+
+        for team in teams:
             team_players = []
             for player_id in team:
                 player = get_player_by_id(player_id)
                 if player:
                     team_players.append(player["name"])
 
-            team_name = f"Team {i}"
+            team_name = mashup_names(team_players)
             team_names.append(team_name)
-            st.write(f"**{team_name}:** {', '.join(team_players)}")
+            st.write(f"Team **{team_name}:** {', '.join(team_players)}")
 
         # Quick game recording interface
         if len(teams) >= 2:

@@ -64,7 +64,9 @@ def show_dashboard() -> None:
 
     # Welcome section for new users
     if not players:
-        st.info("👋 **Welcome to Roundnet Player Management!** Start by adding players.")
+        st.info(
+            "👋 **Welcome to Roundnet Player Management!** Start by adding players."
+        )
 
         # Offer to create sample data
         st.subheader("🚀 Quick Start")
@@ -147,9 +149,9 @@ def show_dashboard() -> None:
 
         with col2:
             st.write("**Best Partnerships by Win Rate:**")
-            # Show partnerships with at least 1 game together
+            # Show partnerships with at least 3 games together
             best_partnerships = partnership_stats[
-                partnership_stats["times_together"] >= 1
+                partnership_stats["times_together"] >= 3
             ].nlargest(5, "win_rate_together")
             if len(best_partnerships) > 0:
                 for _, partnership in best_partnerships.iterrows():

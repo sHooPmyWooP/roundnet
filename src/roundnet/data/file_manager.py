@@ -2,6 +2,7 @@
 
 import json
 from datetime import datetime
+from itertools import combinations
 from pathlib import Path
 from typing import Any
 
@@ -166,37 +167,41 @@ class FileDataManager:
         return None
 
     def _update_partnerships_from_game(self, game: Game) -> None:
-        """Update partnership statistics from a game result."""
+        """Update partnership statistics from a game result, always using unordered pairs."""
+
         partnerships = self.get_partnerships()
+        # Build a dict for fast lookup by unordered pair
+        partnership_dict = {}
+        for p in partnerships:
+            key = tuple(sorted([p.player_a_id, p.player_b_id]))
+            partnership_dict[key] = p
 
-        # Update partnerships for team A
+        # Update partnerships for team A (all unique pairs)
         if len(game.team_a_player_ids) >= 2:
-            # Sort player IDs to ensure consistent ordering
-            p1, p2 = sorted(game.team_a_player_ids[:2])
-            partnership = self.get_partnership(p1, p2)
-            if not partnership:
-                partnership = Partnership(player_a_id=p1, player_b_id=p2)
-                partnerships.append(partnership)
+            for p1, p2 in combinations(sorted(game.team_a_player_ids), 2):
+                key = tuple(sorted([p1, p2]))
+                partnership = partnership_dict.get(key)
+                if not partnership:
+                    partnership = Partnership(player_a_id=key[0], player_b_id=key[1])
+                    partnership_dict[key] = partnership
+                partnership.times_together += 1
+                if game.team_a_wins:
+                    partnership.wins_together += 1
 
-            partnership.times_together += 1
-            if game.team_a_wins:
-                partnership.wins_together += 1
-
-        # Update partnerships for team B
+        # Update partnerships for team B (all unique pairs)
         if len(game.team_b_player_ids) >= 2:
-            # Sort player IDs to ensure consistent ordering
-            p1, p2 = sorted(game.team_b_player_ids[:2])
-            partnership = self.get_partnership(p1, p2)
-            if not partnership:
-                partnership = Partnership(player_a_id=p1, player_b_id=p2)
-                partnerships.append(partnership)
+            for p1, p2 in combinations(sorted(game.team_b_player_ids), 2):
+                key = tuple(sorted([p1, p2]))
+                partnership = partnership_dict.get(key)
+                if not partnership:
+                    partnership = Partnership(player_a_id=key[0], player_b_id=key[1])
+                    partnership_dict[key] = partnership
+                partnership.times_together += 1
+                if game.team_b_wins:
+                    partnership.wins_together += 1
 
-            partnership.times_together += 1
-            if game.team_b_wins:
-                partnership.wins_together += 1
-
-        # Save partnerships
-        data = [p.to_dict() for p in partnerships]
+        # Save only one entry per unordered pair
+        data = [p.to_dict() for p in partnership_dict.values()]
         self._save_json_file(self.partnerships_file, data)
 
     def _update_player_stats_from_game(self, game: Game) -> None:

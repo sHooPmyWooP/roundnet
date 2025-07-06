@@ -133,7 +133,7 @@ def get_recent_games(days: int = 7) -> list[dict[str, Any]]:
 
 
 def get_partnership_stats() -> pd.DataFrame:
-    """Get partnership statistics."""
+    """Get partnership statistics, merging (A,B) and (B,A) as the same partnership."""
     dm = get_data_manager()
     partnerships = dm.get_partnerships()
     players = {p.id: p for p in dm.get_players()}
@@ -141,22 +141,36 @@ def get_partnership_stats() -> pd.DataFrame:
     if not partnerships:
         return pd.DataFrame()
 
-    stats = []
+    merged = {}
     for partnership in partnerships:
-        player_a = players.get(partnership.player_a_id)
-        player_b = players.get(partnership.player_b_id)
+        key = tuple(sorted([partnership.player_a_id, partnership.player_b_id]))
+        if key not in merged:
+            merged[key] = {
+                "player_a_id": key[0],
+                "player_b_id": key[1],
+                "times_together": 0,
+                "wins_together": 0,
+            }
+        merged[key]["times_together"] += partnership.times_together
+        merged[key]["wins_together"] += partnership.wins_together
 
+    stats = []
+    for _, data in merged.items():
+        player_a = players.get(data["player_a_id"])
+        player_b = players.get(data["player_b_id"])
         if player_a and player_b:
+            times = data["times_together"]
+            wins = data["wins_together"]
+            win_rate = wins / times if times > 0 else 0.0
             stats.append(
                 {
                     "player_a_name": player_a.name,
                     "player_b_name": player_b.name,
-                    "times_together": partnership.times_together,
-                    "wins_together": partnership.wins_together,
-                    "win_rate_together": partnership.win_rate_together,
+                    "times_together": times,
+                    "wins_together": wins,
+                    "win_rate_together": win_rate,
                 }
             )
-
     return pd.DataFrame(stats).sort_values("times_together", ascending=False)
 
 
